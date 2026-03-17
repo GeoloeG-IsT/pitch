@@ -37,8 +37,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Scaffold Turborepo monorepo with Next.js, FastAPI, Supabase schema, and health status page
-- [ ] 01-02-PLAN.md -- Create demo content (pitch deck, financial model, investment memo, technical architecture)
+- [x] 01-01-PLAN.md -- Scaffold Turborepo monorepo with Next.js, FastAPI, Supabase schema, and health status page
+- [x] 01-02-PLAN.md -- Create demo content (pitch deck, financial model, investment memo, technical architecture)
 
 ### Phase 2: Document Ingestion
 **Goal**: Founders can upload PDF, text, and Excel documents that are parsed with structure preserved, chunked intelligently, embedded, and stored for retrieval
@@ -50,11 +50,12 @@ Plans:
   3. Founder can upload an Excel financial model and see tables extracted as structured, queryable data
   4. Founder can view, organize, and re-upload documents with the RAG index refreshing automatically
   5. Document sections preserve their original structure (slide boundaries, chapter headings, table layouts) in the chunk metadata
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md -- Parsing pipeline: data models, parsers (PDF/Markdown/Excel), chunker, embedder, and test scaffolds
+- [ ] 02-02-PLAN.md -- Document API endpoints, ingestion orchestrator, and integration tests
+- [ ] 02-03-PLAN.md -- Founder-facing document management UI with upload, status tracking, and organization
 
 ### Phase 3: RAG Query Engine
 **Goal**: Investors can ask natural language questions and receive streamed, source-cited AI answers that draw from the full pitch corpus
@@ -152,7 +153,7 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Demo Content | 2/2 | Complete   | 2026-03-17 |
-| 2. Document Ingestion | 0/0 | Not started | - |
+| 2. Document Ingestion | 0/3 | Not started | - |
 | 3. RAG Query Engine | 0/0 | Not started | - |
 | 4. Smart Document Viewer | 0/0 | Not started | - |
 | 5. Trust + HITL Validation | 0/0 | Not started | - |
