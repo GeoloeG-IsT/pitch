@@ -60,9 +60,11 @@ Exceptions: none
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 16px | 400 (regular) | 1.5 |
-| Label | 14px | 500 (medium) | 1.4 |
+| Label | 14px | 400 (regular) | 1.4 |
 | Heading | 20px | 600 (semibold) | 1.2 |
 | Display | 28px | 600 (semibold) | 1.2 |
+
+**Weights used:** 2 -- regular (400) and semibold (600). Label is differentiated from Body by size alone (14px vs 16px), not by weight.
 
 **Note:** Phase 1 uses only Body, Label, and Heading. Display is declared for forward compatibility but not used on the health page.
 
