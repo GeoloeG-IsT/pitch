@@ -1,0 +1,82 @@
+@page {
+  size: A4 landscape;
+  margin: 40px;
+}
+
+body {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+}
+
+h1 {
+  page-break-before: always;
+  font-size: 32px;
+  color: #1a1a2e;
+  font-family: Inter, system-ui, sans-serif;
+  margin-top: 40px;
+  margin-bottom: 16px;
+}
+
+h1:first-of-type {
+  page-break-before: avoid;
+}
+
+h2 {
+  font-size: 24px;
+  color: #1a1a2e;
+  margin-top: 24px;
+}
+
+h3 {
+  font-size: 20px;
+  color: #1a1a2e;
+  margin-top: 20px;
+}
+
+hr {
+  display: none;
+}
+
+ul, ol {
+  margin-left: 20px;
+}
+
+strong {
+  color: #1a1a2e;
+}
+
+em {
+  color: #555;
+}
+
+blockquote {
+  border-left: 4px solid #6366f1;
+  padding-left: 16px;
+  color: #555;
+  font-style: italic;
+  margin: 16px 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+p {
+  margin-bottom: 12px;
+}
