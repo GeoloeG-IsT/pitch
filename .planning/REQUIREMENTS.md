@@ -60,9 +60,9 @@ Requirements for the PoC demo. Each maps to roadmap phases.
 
 ### Demo Content
 
-- [ ] **DEMO-01**: Create Zeee Pitch Zooo's own pitch deck as demo content
-- [ ] **DEMO-02**: Create Zeee Pitch Zooo's financial model as demo content
-- [ ] **DEMO-03**: Create supporting documents (investment memo, technical architecture) as demo content
+- [x] **DEMO-01**: Create Zeee Pitch Zooo's own pitch deck as demo content
+- [x] **DEMO-02**: Create Zeee Pitch Zooo's financial model as demo content
+- [x] **DEMO-03**: Create supporting documents (investment memo, technical architecture) as demo content
 
 ## v2 Requirements
 
@@ -145,9 +145,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ANLYT-05 | Phase 7 | Pending |
 | LIVE-01 | Phase 8 | Pending |
 | LIVE-02 | Phase 8 | Pending |
-| DEMO-01 | Phase 1 | Pending |
-| DEMO-02 | Phase 1 | Pending |
-| DEMO-03 | Phase 1 | Pending |
+| DEMO-01 | Phase 1 | Complete |
+| DEMO-02 | Phase 1 | Complete |
+| DEMO-03 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 30 total

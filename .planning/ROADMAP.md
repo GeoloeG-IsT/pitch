@@ -12,7 +12,7 @@ This roadmap delivers a demo-ready PoC of an AI-powered interactive pitch platfo
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation + Demo Content** - Turborepo monorepo scaffolding (pnpm + uv), API contract, and Zeee Pitch Zooo's own pitch materials
+- [x] **Phase 1: Foundation + Demo Content** - Turborepo monorepo scaffolding (pnpm + uv), API contract, and Zeee Pitch Zooo's own pitch materials (completed 2026-03-17)
 - [ ] **Phase 2: Document Ingestion** - Multimodal document parsing, chunking, embedding, and content management
 - [ ] **Phase 3: RAG Query Engine** - Vector retrieval, prompt construction, and streamed AI answers with citations
 - [ ] **Phase 4: Smart Document Viewer** - Scrollable investor-facing pitch viewer with inline contextual Q&A
@@ -151,7 +151,7 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Demo Content | 0/2 | Planning complete | - |
+| 1. Foundation + Demo Content | 2/2 | Complete   | 2026-03-17 |
 | 2. Document Ingestion | 0/0 | Not started | - |
 | 3. RAG Query Engine | 0/0 | Not started | - |
 | 4. Smart Document Viewer | 0/0 | Not started | - |
