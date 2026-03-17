@@ -34,11 +34,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A 12-15 slide pitch deck PDF for Zeee Pitch Zooo exists and is ready for upload
   4. A financial model spreadsheet (TAM/SAM/SOM, revenue projections, burn rate) exists and is ready for upload
   5. At least 2 supporting documents (investment memo, technical architecture) exist and are ready for upload
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md -- Scaffold Turborepo monorepo with Next.js, FastAPI, Supabase schema, and health status page
+- [ ] 01-02-PLAN.md -- Create demo content (pitch deck, financial model, investment memo, technical architecture)
 
 ### Phase 2: Document Ingestion
 **Goal**: Founders can upload PDF, text, and Excel documents that are parsed with structure preserved, chunked intelligently, embedded, and stored for retrieval
@@ -151,7 +151,7 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Demo Content | 0/0 | Not started | - |
+| 1. Foundation + Demo Content | 0/2 | Planning complete | - |
 | 2. Document Ingestion | 0/0 | Not started | - |
 | 3. RAG Query Engine | 0/0 | Not started | - |
 | 4. Smart Document Viewer | 0/0 | Not started | - |
