@@ -1,0 +1,21 @@
+[project]
+name = "zeee-api"
+version = "0.1.0"
+description = "Zeee Pitch Zooo API backend"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.135.0",
+    "uvicorn",
+    "python-dotenv",
+    "pydantic-settings",
+    "supabase",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "httpx",
+    "ruff",
+    "mypy",
+]

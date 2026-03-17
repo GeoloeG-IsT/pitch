@@ -1,0 +1,27 @@
+{
+  "name": "zeee-pitch-zooo",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:migrate": "supabase migration new",
+    "content:build": "cd content && uv run python build-all.py"
+  },
+  "devDependencies": {
+    "turbo": "^2.8.17",
+    "supabase": "^2.81.0"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "supabase",
+      "sharp"
+    ]
+  }
+}
