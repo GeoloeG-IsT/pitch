@@ -47,3 +47,4 @@ htmlcov/
 *.sum
 .npm-cache
 .agents-reverse-engineer/progress-*.log
+.agents-reverse-engineer/logs/*
