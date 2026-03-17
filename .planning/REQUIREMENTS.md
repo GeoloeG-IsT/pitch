@@ -118,13 +118,42 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated during roadmap creation) | | |
+| INGEST-01 | Phase 2 | Pending |
+| INGEST-02 | Phase 2 | Pending |
+| INGEST-03 | Phase 2 | Pending |
+| INGEST-04 | Phase 2 | Pending |
+| VIEW-01 | Phase 4 | Pending |
+| VIEW-02 | Phase 4 | Pending |
+| VIEW-03 | Phase 4 | Pending |
+| QA-01 | Phase 3 | Pending |
+| QA-02 | Phase 4 | Pending |
+| QA-03 | Phase 3 | Pending |
+| QA-04 | Phase 3 | Pending |
+| TRUST-01 | Phase 5 | Pending |
+| TRUST-02 | Phase 5 | Pending |
+| TRUST-03 | Phase 5 | Pending |
+| AUTH-01 | Phase 6 | Pending |
+| AUTH-02 | Phase 6 | Pending |
+| AUTH-03 | Phase 6 | Pending |
+| AUTH-04 | Phase 6 | Pending |
+| MGMT-01 | Phase 2 | Pending |
+| MGMT-02 | Phase 2 | Pending |
+| ANLYT-01 | Phase 7 | Pending |
+| ANLYT-02 | Phase 7 | Pending |
+| ANLYT-03 | Phase 7 | Pending |
+| ANLYT-04 | Phase 7 | Pending |
+| ANLYT-05 | Phase 7 | Pending |
+| LIVE-01 | Phase 8 | Pending |
+| LIVE-02 | Phase 8 | Pending |
+| DEMO-01 | Phase 1 | Pending |
+| DEMO-02 | Phase 1 | Pending |
+| DEMO-03 | Phase 1 | Pending |
 
 **Coverage:**
-- v1 requirements: 27 total
-- Mapped to phases: 0
-- Unmapped: 27
+- v1 requirements: 30 total
+- Mapped to phases: 30
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-17*
-*Last updated: 2026-03-17 after initial definition*
+*Last updated: 2026-03-17 after roadmap creation*

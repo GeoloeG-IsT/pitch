@@ -54,7 +54,7 @@ Investors can ask natural language questions about any aspect of a startup's pit
 
 ## Constraints
 
-- **Tech stack**: Next.js/React frontend, Python backend for RAG pipeline, cloud-hosted
+- **Tech stack**: Turborepo monorepo — Next.js/React frontend (pnpm), Python/FastAPI backend for RAG (uv), cloud-hosted
 - **Timeline**: 2-4 weeks to demo-ready (tight sprint)
 - **Team**: Solo + AI — every architectural decision must favor simplicity and speed
 - **Content**: Must create Zeee Pitch Zooo's own pitch materials (deck, financial model, supporting docs) as demo content
@@ -69,6 +69,7 @@ Investors can ask natural language questions about any aspect of a startup's pit
 | Auth + RBAC only for security (not full VDR) | Sufficient credibility signal for PoC, dramatically reduces build scope | — Pending |
 | Dogfooding as demo strategy | Meta-demo is compelling, reduces need for external demo content, proves the product works | — Pending |
 | Next.js + Python RAG backend | Modern web stack with best-in-class AI/ML ecosystem for RAG pipeline | — Pending |
+| Turborepo monorepo (pnpm + uv) | Single repo with unified build orchestration; pnpm for TS, uv for Python | — Pending |
 
 ---
 *Last updated: 2026-03-17 after initialization*
