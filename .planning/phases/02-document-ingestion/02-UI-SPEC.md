@@ -52,11 +52,11 @@ Source: Established in Phase 1 `page.tsx` (space-y-2 = 8px, mt-8 = 32px, p-4 = 1
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 16px (`text-base`) | 400 (regular) | 1.5 |
-| Label | 14px (`text-sm`) | 500 (medium) | 1.4 |
+| Label | 14px (`text-sm`) | 400 (regular) | 1.4 |
 | Heading | 20px (`text-xl`) | 600 (semibold) | 1.2 |
 | Display | 28px (`text-[28px]`) | 600 (semibold) | 1.2 |
 
-Source: Phase 1 `page.tsx` established 28px/semibold display, text-base body, text-sm labels. Added 20px heading for section-level titles in the document management view (page title uses display, section titles like "Your Documents" use heading).
+Source: Phase 1 `page.tsx` established 28px/semibold display, text-base body, text-sm labels. Added 20px heading for section-level titles in the document management view (page title uses display, section titles like "Your Documents" use heading). Label uses size difference (14px vs 16px) to distinguish from Body without requiring a separate weight.
 
 ---
 
@@ -105,10 +105,10 @@ Source: `globals.css` tokens. Green for "ready" follows Phase 1 health status ba
 | Delete confirmation heading | "Delete {document title}?" |
 | Delete confirmation body | "This will permanently remove the document and all its indexed content. This cannot be undone." |
 | Delete confirmation button | "Delete Document" |
-| Delete cancel button | "Cancel" |
+| Delete cancel button | "Keep Document" |
 | Re-upload confirmation heading | "Replace {document title}?" |
 | Re-upload confirmation body | "The existing document and its index will be replaced with the new file." |
-| Re-upload confirmation button | "Replace" |
+| Re-upload confirmation button | "Replace File" |
 | Page title | "Documents" |
 | Section heading (document list) | "Your Documents" |
 | File size format | "{n} KB" or "{n} MB" (human-readable, 1 decimal) |
@@ -153,7 +153,7 @@ cd apps/web && npx shadcn add dialog progress sonner dropdown-menu skeleton sepa
 ### Document List
 
 1. **Layout**: Vertical stack of document cards, 8px gap between cards.
-2. **Card content**: File icon (by type: PDF, Excel, text), document title, file size, upload date, status badge, chunk count (if ready), overflow menu button (three dots).
+2. **Card content**: File icon (by type: PDF, Excel, text), document title, file size, upload date, status badge, chunk count (if ready), overflow menu button (three-dot icon, `aria-label="Document actions"`).
 3. **Overflow menu**: "Replace File" and "Delete" actions. Delete is styled in destructive color.
 4. **Empty state**: Centered illustration-free layout with heading, body text, and format hint. Upload drop zone doubles as the empty state CTA.
 5. **Loading state**: 3 skeleton cards matching document card dimensions.
@@ -161,7 +161,7 @@ cd apps/web && npx shadcn add dialog progress sonner dropdown-menu skeleton sepa
 ### Delete Flow
 
 1. **Trigger**: "Delete" from overflow menu.
-2. **Confirmation**: Dialog with heading, body, "Cancel" (secondary) and "Delete Document" (destructive) buttons.
+2. **Confirmation**: Dialog with heading, body, "Keep Document" (secondary) and "Delete Document" (destructive) buttons.
 3. **Execution**: On confirm, card fades out, toast confirms deletion.
 
 ### Re-upload Flow
@@ -174,6 +174,16 @@ cd apps/web && npx shadcn add dialog progress sonner dropdown-menu skeleton sepa
 
 1. **Mechanism**: After upload, poll `GET /api/v1/documents/{id}` every 3 seconds until status is "ready" or "error".
 2. **Timeout**: Stop polling after 5 minutes, show error state with "Processing is taking longer than expected. Refresh to check status."
+
+---
+
+## Accessibility Conventions
+
+| Pattern | Convention |
+|---------|-----------|
+| Overflow menu trigger | `aria-label="Document actions"` on the three-dot icon button |
+| Dialog close | Dialog components inherit Radix UI focus-trap and Escape-to-close behavior |
+| Status badges | Use `role="status"` for live processing state changes |
 
 ---
 
