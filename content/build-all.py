@@ -23,21 +23,29 @@ def run(script: str):
 
 def main():
     run("pitch-deck/build.py")
+    run("financial-model/build.py")
 
-    # Financial model build (added in Task 2)
-    fm_script = CONTENT_DIR / "financial-model" / "build.py"
-    if fm_script.exists():
-        run("financial-model/build.py")
+    from build_docs import build_docs
+    build_docs()
 
-    # Memo and architecture PDF builds (added in Task 2)
-    try:
-        from build_docs import build_docs
-        build_docs()
-    except ImportError:
-        print("Skipping doc builds (build_docs not yet available)")
+    # Verify all outputs exist
+    output_dir = CONTENT_DIR / "output"
+    expected = [
+        "pitch-deck.pdf",
+        "financial-model.xlsx",
+        "investment-memo.pdf",
+        "technical-architecture.pdf",
+    ]
+    missing = [f for f in expected if not (output_dir / f).exists()]
+    if missing:
+        print(f"\nERROR: Missing outputs: {missing}")
+        sys.exit(1)
 
     print(f"\nAll content built successfully!")
-    print(f"Output: {CONTENT_DIR / 'output'}")
+    print(f"Output directory: {output_dir}")
+    for f in expected:
+        size = (output_dir / f).stat().st_size
+        print(f"  {f}: {size:,} bytes")
 
 
 if __name__ == "__main__":

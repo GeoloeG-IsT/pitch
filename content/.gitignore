@@ -1,0 +1,11 @@
+# Generated output files (rebuild with: uv run python build-all.py)
+output/
+
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# uv lock file is committed for reproducibility
