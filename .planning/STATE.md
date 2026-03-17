@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 1 UI-SPEC approved
-last_updated: "2026-03-17T12:14:58.293Z"
-last_activity: 2026-03-17 -- Roadmap created with 8 phases, 30 requirements mapped
+status: executing
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-03-17T15:06:16Z"
+last_activity: 2026-03-17 -- Completed plan 01-01 (monorepo scaffold + health page)
 progress:
   total_phases: 8
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -26,16 +26,16 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 ## Current Position
 
 Phase: 1 of 8 (Foundation + Demo Content)
-Plan: 0 of 0 in current phase
-Status: Ready to plan
-Last activity: 2026-03-17 -- Roadmap created with 8 phases, 30 requirements mapped
+Plan: 2 of 2 in current phase
+Status: Executing
+Last activity: 2026-03-17 -- Completed plan 01-01 (monorepo scaffold + health page)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
+- Total plans completed: 1
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -43,7 +43,7 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| Phase 1 | 1/2 | ~25min | ~25min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -61,6 +61,9 @@ Recent decisions affecting current work:
 - Roadmap: 8 phases derived from 30 v1 requirements at fine granularity
 - Roadmap: Demo content creation in Phase 1 (parallel with scaffolding, not deferred to end)
 - Roadmap: Auth (Phase 6) depends only on Phase 1, can parallelize with core pipeline phases
+- 01-01: HNSW index for pgvector (not IVFFlat) -- better recall at our scale
+- 01-01: shadcn New York style with CSS variables for component theming
+- 01-01: Next.js rewrites proxy /api/v1/* to FastAPI backend (single origin)
 
 ### Pending Todos
 
@@ -74,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T12:14:58.287Z
-Stopped at: Phase 1 UI-SPEC approved
-Resume file: .planning/phases/01-foundation-demo-content/01-UI-SPEC.md
+Last session: 2026-03-17T15:06:16Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: .planning/phases/01-foundation-demo-content/01-02-PLAN.md
