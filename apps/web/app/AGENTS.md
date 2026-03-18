@@ -2,70 +2,53 @@
 
 # app/
 
-Next.js 14 app directory implementing the Zeee Pitch Zooo frontend with Tailwind CSS theming, global layouts, and a service health dashboard homepage.
+Next.js App Router entry point defining global styles, root layout, and system health dashboard.
 
 ## Contents
 
-### Styling & Theming
-- [globals.css](./globals.css) — Tailwind base/component/utilities layers; defines 42+ CSS custom properties for light/dark themes (HSL/OKLCH color spaces), semantic color tokens, chart colors, sidebar variants, and 8-step border-radius scale.
+### [globals.css](./globals.css)
+Defines CSS custom properties for Tailwind-based theme system. Exports `--color-*` semantic tokens (background, foreground, primary, secondary, muted, accent, destructive, border, input, ring, chart-1 through chart-5, sidebar variants) in HSL format for light mode, OKLCH format for dark mode via `.dark` class. Geometry: `--radius` and derived scale (sm, md, lg, xl, 2xl, 3xl, 4xl). Typography: `--font-sans` variable.
 
-### Layout & Pages
-- [layout.tsx](./layout.tsx) — Root `RootLayout` component; configures Geist Sans (`--font-sans`) and Inter fonts from `next/font/google`, exports `metadata` object with app title/description, wraps children in `<html lang="en">` with font classes.
-- [page.tsx](./page.tsx) — `HomePage` client component; fetches `/api/health`, renders three status cards (Frontend, Backend API, Supabase) with color-coded `StatusBadge` components, displays loading skeletons during fetch, shows remediation message via `getSummaryMessage()`.
+### [layout.tsx](./layout.tsx)
+Exports `RootLayout` component and `metadata` object. Configures Geist (`--font-sans` variable) and Inter fonts via `next/font/google`. Root `<html>` applies `lang="en"`, `font-sans`, `geist.variable`; `<body>` uses `inter.className` wrapping `{children}`.
 
-## Architecture
+### [page.tsx](./page.tsx)
+Exports `HomePage` default component. Client-side health dashboard polling `../api/health/route` on mount. Renders service cards for Frontend (always ok), Backend, Supabase via `StatusBadge` component. `HealthData` type: `status`, `frontend`, `backend`, `database`, `timestamp`. `getSummaryMessage` returns degradation guidance string based on downCount.
 
-**Data Flow:**
-1. `HomePage` fetches `HealthData` from `/api/health` on mount
-2. Maps `backend`/`database` service statuses to `StatusBadge` components (Frontend always `'ok'`)
-3. `getSummaryMessage()` computes instructional text based on unreachable/degraded service counts
-4. Displays fallback degraded state on fetch error
+## Stack
 
-**Layout Hierarchy:**
-```
-RootLayout (fonts, metadata, global styles)
-└── HomePage (health dashboard)
-    ├── StatusBadge × 3 (service indicators)
-    └── Remediation message footer
-```
+- **Framework**: Next.js App Router
+- **Styling**: Tailwind CSS via custom properties, shadcn/ui component integration
+- **Fonts**: Geist (variable font), Inter (body font)
+- **State Management**: React useState for health polling
 
-## Behavioral Contracts
+## Theme System Architecture
 
-### Service Health Messages
-`getSummaryMessage(health: HealthData)` logic:
-- ≥2 services unreachable: `"Multiple services are down. Run \`turbo dev\` and \`supabase start\` to start all services."`
-- Any unreachable or degraded: `"Some services are not responding. Check that all services are running."`
-- All operational: `"All systems operational"`
-
-### Status Badge Mapping
-`StatusBadge({ status })` maps `ServiceStatus` to Badge variants:
-- `'ok'` → green badge: `"Healthy"`
-- `'degraded'` → yellow badge: `"Degraded"`
-- `'unreachable'` → red destructive badge: `"Unreachable"`
-
-### Color Tokens (globals.css)
-Light mode baseline in `:root`:
-- Semantic: `--background`, `--foreground`, `--card`, `--primary`, `--secondary`, `--muted`, `--accent`, `--destructive`
-- UI: `--border`, `--input`, `--ring`
-- Charts: `--chart-1` through `--chart-5`
-- Sidebar: `--sidebar-*` (8 tokens)
-
-Dark mode overrides in `.dark` class with inverted luminosity values (duplicate OKLCH/HSL definitions).
-
-### Border Radius Scale
-Base `--radius: 0.625rem` with 7 computed variants:
-- `--radius-sm` (0.6×) through `--radius-4xl` (2.6×)
-
-## Integration Points
-
-- **UI Components:** Imports `Badge`, `Card`, `CardContent`, `CardHeader`, `CardTitle` from `@/components/ui/*`
-- **Utilities:** Uses `cn()` from `@/lib/utils` for className composition
-- **API Routes:** Fetches health data from `/api/health` (defined in `apps/web/app/api/health/route.ts`)
-- **Fonts:** Loads Geist Sans (variable font) and Inter from Google Fonts CDN
-- **Styling:** Tailwind config references theme variables via `var(--color-*)` syntax
+Custom variant `dark` targets `.dark` class descendants via `@custom-variant dark (&:is(.dark *))`. Color tokens defined in both HSL (light mode default) and OKLCH (dark mode overrides) formats. Radius system derives 7 scales from single `--radius` base value (0.625rem).
 
 ## File Relationships
 
-- `globals.css` provides design tokens consumed by all downstream components
-- `layout.tsx` wraps `page.tsx` and all route segments with font configuration and metadata
-- `page.tsx` depends on UI components from `../components/ui/` and health API route
+- `layout.tsx` imports `globals.css` at root, establishing theme tokens for all descendants
+- `page.tsx` consumes theme via shadcn/ui `Badge`, `Card` components (defined in `../../components/ui/`)
+- Health endpoint path `../api/health/route` resolved to `apps/web/app/api/health/route.ts`
+
+## Behavioral Contracts
+
+### Status Mapping
+- `StatusBadge` maps `ServiceStatus` → Badge variant: `'ok'` → green background, `'degraded'` → yellow background, `'unreachable'` → destructive variant
+
+### Health Response Schema
+```typescript
+{
+  status: 'healthy' | 'degraded',
+  frontend: 'ok',
+  backend: 'ok' | 'degraded' | 'unreachable',
+  database: 'ok' | 'unreachable',
+  timestamp: string
+}
+```
+
+### Degradation Guidance
+- `downCount >= 2`: "Multiple services are down. Run `turbo dev` and `supabase start`..."
+- `downCount > 0`: "Some services are not responding..."
+- `else`: "All systems operational"

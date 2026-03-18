@@ -50,6 +50,7 @@ exclude:
     - "**/*.d.ts"
     - "**/__init__.py"
     - "content/**"
+    - "docs/**"
     - "supabase/.branches/**"
 
   # Vendor directories to exclude from analysis

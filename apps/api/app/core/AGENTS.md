@@ -2,22 +2,30 @@
 
 # core
 
-Configuration layer for the FastAPI application, providing centralized environment-driven settings via Pydantic BaseSettings with `.env` file support.
+Configuration and service client initialization layer for the FastAPI backend. Loads environment variables via Pydantic BaseSettings and provides a Supabase service client factory for privileged database operations.
 
 ## Contents
 
-- **[config.py](./config.py)** — Exports `Settings(BaseSettings)` class and `settings` singleton; defines `supabase_url`, `supabase_key`, `environment` fields with `.env` override support via `SettingsConfigDict`.
+### Configuration
 
-## Configuration
+**[config.py](./config.py)** — `Settings(BaseSettings)` with `supabase_url`, `supabase_key`, `supabase_service_role_key`, `openai_api_key`, `environment` fields; singleton `settings` instance loads from `.env` at project root (4 levels up via `Path(__file__).resolve().parents[4]`).
 
-`Settings` loads from `.env` at monorepo root (4 levels up from `apps/api/app/core/config.py`). Defaults: `supabase_url="http://127.0.0.1:54321"`, `supabase_key=""`, `environment="development"`. Uses `extra="ignore"` to skip unknown environment variables.
+### Service Clients
 
-## Behavioral Contracts
+**[supabase.py](./supabase.py)** — `get_service_client()` returns `Client` authenticated with `supabase_service_role_key`, bypassing Row Level Security for backend operations on documents and chunks tables.
 
-**Environment Variable Interface:**
-- `SUPABASE_URL` → `Settings.supabase_url`
-- `SUPABASE_KEY` → `Settings.supabase_key`
-- `ENVIRONMENT` → `Settings.environment`
+## Configuration Source
 
-**Singleton Pattern:**
-- Module-level `settings: Settings` instance instantiated at import time; all consumers share the same configuration object.
+Settings resolve `.env` from project root using `Path(__file__).resolve().parents[4]`. `SettingsConfigDict(extra="ignore")` drops unknown variables.
+
+## Default Values
+
+- `supabase_url`: `"http://127.0.0.1:54321"`
+- `supabase_key`, `supabase_service_role_key`, `openai_api_key`: `""`
+- `environment`: `"development"`
+
+## Dependencies
+
+- `pydantic_settings.BaseSettings` for config loading
+- `supabase.create_client`, `supabase.Client` for service client factory
+- Internal: `app.core.config.settings` consumed by `get_service_client()`

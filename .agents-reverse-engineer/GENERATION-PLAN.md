@@ -1,13 +1,13 @@
 # Documentation Generation Plan
 
-Generated: 2026-03-17
+Generated: 2026-03-18
 Project: /home/pascal/wks/pitch
 
 ## Summary
 
-- **Total Tasks**: 40
-- **File Tasks**: 26
-- **Directory Tasks**: 14
+- **Total Tasks**: 49
+- **File Tasks**: 33
+- **Directory Tasks**: 16
 - **Traversal**: Post-order (children before parents)
 
 ---
@@ -17,11 +17,25 @@ Project: /home/pascal/wks/pitch
 ### Depth 5: apps/api/app/api/v1/ (1 files)
 - [x] `apps/api/app/api/v1/health.py`
 
+### Depth 5: apps/api/app/services/parsers/ (3 files)
+- [x] `apps/api/app/services/parsers/excel_parser.py`
+- [x] `apps/api/app/services/parsers/markdown_pipeline.py`
+- [x] `apps/api/app/services/parsers/pdf_pipeline.py`
+
 ### Depth 5: apps/web/app/api/health/ (1 files)
 - [x] `apps/web/app/api/health/route.ts`
 
-### Depth 4: apps/api/app/core/ (1 files)
+### Depth 4: apps/api/app/core/ (2 files)
 - [x] `apps/api/app/core/config.py`
+- [x] `apps/api/app/core/supabase.py`
+
+### Depth 4: apps/api/app/models/ (2 files)
+- [x] `apps/api/app/models/chunk.py`
+- [x] `apps/api/app/models/document.py`
+
+### Depth 4: apps/api/app/services/ (2 files)
+- [x] `apps/api/app/services/node_mapper.py`
+- [x] `apps/api/app/services/pipeline.py`
 
 ### Depth 4: apps/web/components/ui/ (3 files)
 - [x] `apps/web/components/ui/badge.tsx`
@@ -57,9 +71,6 @@ Project: /home/pascal/wks/pitch
 - [x] `packages/shared-types/package.json`
 - [x] `packages/shared-types/tsconfig.json`
 
-### Depth 1: docs/ (1 files)
-- [x] `docs/prd.md`
-
 ### Depth 1: supabase/ (1 files)
 - [x] `supabase/config.toml`
 
@@ -70,14 +81,17 @@ Project: /home/pascal/wks/pitch
 
 ---
 
-## Phase 2: Directory AGENTS.md (Post-Order Traversal, 14 directories)
+## Phase 2: Directory AGENTS.md (Post-Order Traversal, 16 directories)
 
 ### Depth 5
 - [x] `apps/api/app/api/v1/AGENTS.md`
+- [x] `apps/api/app/services/parsers/AGENTS.md`
 - [x] `apps/web/app/api/health/AGENTS.md`
 
 ### Depth 4
 - [x] `apps/api/app/core/AGENTS.md`
+- [x] `apps/api/app/models/AGENTS.md`
+- [x] `apps/api/app/services/AGENTS.md`
 - [x] `apps/web/components/ui/AGENTS.md`
 
 ### Depth 3
@@ -92,7 +106,6 @@ Project: /home/pascal/wks/pitch
 - [x] `packages/shared-types/AGENTS.md`
 
 ### Depth 1
-- [x] `docs/AGENTS.md`
 - [x] `supabase/AGENTS.md`
 
 ### Depth 0

@@ -2,73 +2,66 @@
 
 # web
 
-Next.js 14 web app with Supabase auth, Tailwind CSS theming, and Base UI components; proxies `/api/v1/*` requests to backend API server.
+Next.js 16 web application with Supabase authentication, Tailwind CSS v4 styling, and shadcn/ui components serving as frontend for the document processing system.
 
 ## Contents
 
-### Configuration & Build
-- [package.json](./package.json) — defines dev/build/lint scripts; dependencies: Next.js ^16.1.7, React ^19.1.0, Supabase SSR ^0.9.0, Tailwind CSS ^4.2.1, Base UI ^1.3.0, lucide-react ^0.577.0
-- [next.config.ts](./next.config.ts) — configures async `rewrites()` proxying `/api/v1/:path*` → `${BACKEND_URL}/api/v1/:path*` (defaults to `http://localhost:8000`)
-- [tsconfig.json](./tsconfig.json) — enables strict type-checking, ESNext modules, `@/*` alias to `./`, includes `.next/types/**/*.ts`
-- [postcss.config.mjs](./postcss.config.mjs) — enables `@tailwindcss/postcss` plugin for CSS processing
-- [components.json](./components.json) — shadcn/ui config: style `"base-nova"`, RSC enabled, CSS variables mode, path aliases (`@/components`, `@/lib`, `@/hooks`), lucide icons
+### [components.json](./components.json)
+Configures shadcn/ui component library integration. Uses `base-nova` style variant, enables React Server Components (`rsc: true`) and TypeScript JSX (`tsx: true`). Defines path aliases (`@/components`, `@/lib/utils`, `@/hooks`) and sets Tailwind integration with `neutral` baseColor, CSS variables enabled, Lucide icon library. Configures component install paths to `components` directory.
+
+### [next.config.ts](./next.config.ts)
+Exports `nextConfig` with rewrites for API proxy. Maps `/api/v1/:path*` to backend service at `BACKEND_URL` env var (defaults `http://localhost:8000/api/v1/:path*`). Enables transparent backend communication without CORS.
+
+### [package.json](./package.json)
+Defines `@zeee/web` workspace package. Scripts: `dev` (Next.js dev server), `build`, `start`, `lint`, `typecheck`. Dependencies: Next.js 16.1.7 + React 19.1.0, Supabase SSR (`@supabase/ssr`, `@supabase/supabase-js`), Tailwind CSS 4.2.1 + PostCSS, shadcn 4.0.8 + `@base-ui/react` primitives, `class-variance-authority`/`clsx`/`tailwind-merge` for conditional styling, `lucide-react` icons.
+
+### [postcss.config.mjs](./postcss.config.mjs)
+PostCSS configuration object registering `@tailwindcss/postcss` plugin for Tailwind CSS v4 processing (plugin-based architecture vs v3 JIT mode).
+
+### [tsconfig.json](./tsconfig.json)
+TypeScript strict mode config for Next.js. Target ES2017, `moduleResolution: "bundler"`, `jsx: "react-jsx"` (automatic transform), `isolatedModules: true`, `noEmit: true` (type-check only). Path alias `@/*` maps to `./*`. Includes `next-env.d.ts`, `.next/types/**`, all `.ts/.tsx` files; excludes `node_modules`.
 
 ## Subdirectories
 
-- [app/](./app/) — Next.js app directory with root layout, service health dashboard homepage, global CSS theme tokens (42+ HSL/OKLCH variables), and `/api/health` route
-- [components/ui/](./components/ui/) — shadcn/ui components: `Badge`, `Button`, `Card` (with `CardHeader`/`CardTitle`/`CardContent`) using CVA variants and Tailwind CSS variables
-- [lib/](./lib/) — exports `cn()` utility merging Tailwind classes via `clsx` and `tailwind-merge`
+### [app/](./app/)
+Next.js App Router entry point with global CSS custom properties theme system, root layout configuring Geist and Inter fonts, system health dashboard polling `/api/health` endpoint.
 
-## Architecture
-
-**Request Flow:**
-```
-Browser → Next.js middleware
-         ├─ /api/v1/* → rewrite to BACKEND_URL/api/v1/*
-         ├─ /api/health → apps/web/app/api/health/route.ts
-         └─ / → app/page.tsx (fetches /api/health, renders StatusBadge components)
-```
-
-**Component Layer:**
-- `app/layout.tsx` provides Geist Sans/Inter fonts, metadata, global CSS
-- `app/page.tsx` consumes `@/components/ui/{badge,card}` and `@/lib/utils`
-- UI components use `cn()` for className composition and Tailwind CSS custom properties
+### [lib/](./lib/)
+UI utilities — exports `cn()` function merging clsx and tailwind-merge for conflict-free Tailwind class composition.
 
 ## Stack
 
-- **Framework:** Next.js 16.1.7 with React 19.1.0, TypeScript, App Router
-- **Styling:** Tailwind CSS 4.2.1 with `@tailwindcss/postcss`, CSS variables mode
-- **UI Kit:** Base UI 1.3.0, shadcn/ui components, lucide-react icons
-- **Backend Integration:** Supabase SSR 0.9.0, Supabase JS 2.99.2
-- **Build Tools:** PostCSS, TypeScript compiler (no emit)
+- **Framework**: Next.js 16.1.7 (App Router) + React 19.1.0
+- **Styling**: Tailwind CSS 4.2.1 (PostCSS plugin architecture), shadcn/ui `base-nova` variant
+- **Auth**: Supabase SSR (`@supabase/ssr` 0.6.2, `@supabase/supabase-js` 2.48.1)
+- **UI Primitives**: shadcn 4.0.8, `@base-ui/react` 0.0.33, Lucide React icons
+- **Build Tools**: TypeScript 5.7.3, PostCSS 9.0.2, `@tailwindcss/postcss` 4.2.1
 
-## Path Aliases
+## Configuration
 
-```typescript
-@/components → ./components
-@/lib → ./lib
-@/hooks → ./hooks
-@/components/ui → ./components/ui
-@/lib/utils → ./lib/utils
-```
+- **API Proxy**: `/api/v1/*` rewrites to backend service (default `http://localhost:8000`)
+- **Path Aliases**: `@/*` resolves to `apps/web/*` via tsconfig paths
+- **Component Paths**: shadcn components install to `components/`, UI primitives to `components/ui/`
+- **CSS Variables**: Theme tokens in `app/globals.css` using HSL (light) and OKLCH (dark) formats
 
-## Environment Variables
+## Architecture
 
-- `BACKEND_URL` — API server base URL (default: `http://localhost:8000`)
-
-## Behavioral Contracts
-
-### shadcn/ui Component Generation
-- Theme: `"base-nova"`, `baseColor: "neutral"`, `menuColor: "default"`, `menuAccent: "subtle"`
-- Icon library: `"lucide"`
-- No Tailwind prefix, no RTL support, no custom registries
-
-### API Proxy Rules
-All `/api/v1/:path*` requests rewrite to `${BACKEND_URL}/api/v1/:path*` (configured in `next.config.ts` via `rewrites()` function).
+- **Routing**: App Router with server components by default (`rsc: true` in components.json)
+- **Styling**: CSS custom properties (`--color-*`, `--radius`) defined in `globals.css`, consumed via Tailwind utilities
+- **State Management**: Client-side React state for health polling dashboard
+- **Backend Communication**: Next.js rewrites proxy API requests to Python FastAPI backend
 
 ## File Relationships
 
-- `next.config.ts` references `process.env.BACKEND_URL` for API rewrites
-- `tsconfig.json` enables `@/*` aliases consumed by `app/layout.tsx`, `app/page.tsx`, UI components
-- `components.json` defines paths used by shadcn/ui CLI to scaffold components
-- `postcss.config.mjs` processes Tailwind directives in `app/globals.css`
+- `postcss.config.mjs` processes `app/globals.css` via Tailwind CSS v4 plugin
+- `components.json` defines import paths consumed by shadcn CLI and TypeScript path resolution
+- `next.config.ts` rewrites enable `app/api/health/route.ts` to query backend health endpoint
+- `tsconfig.json` path alias `@/*` used by `app/layout.tsx` imports (`@/lib/utils`)
+
+## Workflow & Conventions
+
+- **Type Checking**: Run `pnpm typecheck` before commits (TypeScript strict mode enforced)
+- **Linting**: Execute `pnpm lint` (Next.js ESLint config)
+- **Development**: Start dev server with `pnpm dev` (requires backend at `BACKEND_URL` for health checks)
+- **Component Installation**: Use shadcn CLI with `components.json` config for UI component scaffolding
+- **Styling**: Prefer Tailwind utility classes composed via `cn()` helper over inline styles

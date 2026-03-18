@@ -2,25 +2,33 @@
 
 # supabase
 
-Local Supabase development environment configuration for zeee-pitch-zooo project, defining service ports, database schema exposure, auth policies, and JWT lifecycle rules.
+Configures local Supabase development environment ports, auth flows, API schemas, and database settings for the zeee-pitch-zooo project.
 
 ## Contents
 
-**[config.toml](./config.toml)** — Port assignments (API 54321, DB 54322, Studio 54323), schema exposure (`public`, `graphql_public`), PostgreSQL 15 major version lock, JWT 3600s expiry with refresh token rotation (10s reuse window), email double confirmation on address change.
+- **[config.toml](./config.toml)**: Defines project_id="zeee-pitch-zooo", service ports (API 54321, DB 54322, Studio 54323, shadow DB 54320), auth settings (jwt_expiry=3600, enable_signup=true, site_url="http://127.0.0.1:3000"), DB major_version=15, API schemas ["public", "graphql_public"], max_rows=1000.
 
 ## Configuration Surface
 
-**Project Identity:**  
-`project_id = "zeee-pitch-zooo"` — Instance discriminator for multi-project localhost setups.
+Five top-level sections govern Supabase services:
 
-**API Schema Exposure:**  
-Schemas `["public", "graphql_public"]` accessible via REST/GraphQL endpoints. `extra_search_path = ["public", "extensions"]` prepended to all queries. `max_rows = 1000` caps response payload size.
+- **api**: Exposes schemas ["public", "graphql_public"], extra_search_path ["public", "extensions"], max_rows=1000.
+- **db**: Sets port 54322, shadow_port 54320, major_version=15.
+- **studio**: Binds port 54323, api_url="http://127.0.0.1".
+- **auth**: Configures site_url="http://127.0.0.1:3000", additional_redirect_urls ["https://127.0.0.1:3000"], jwt_expiry=3600, enable_refresh_token_rotation=true, refresh_token_reuse_interval=10, enable_signup=true, double_confirm_changes=true, enable_confirmations=false.
+- **auth.email**: Sets enable_signup=true, double_confirm_changes=true, enable_confirmations=false.
 
-**Database Version Lock:**  
-`major_version = 15` enforces PostgreSQL 15 compatibility with remote environment. Shadow database on port 54320 for migration diff previews.
+## Behavioral Contracts
 
-**Auth Flow:**  
-`site_url = "http://127.0.0.1:3000"` (primary redirect), `additional_redirect_urls = ["https://127.0.0.1:3000"]` (HTTPS variant). Email signups enabled globally (`enable_signup = true`) and per-provider (`email.enable_signup = true`). Email change requires double confirmation (`email.double_confirm_changes_enabled = true`), signin skips pre-confirmation (`email.enable_confirmations = false`).
+- **Project ID**: `project_id="zeee-pitch-zooo"` identifies the Supabase instance.
+- **Port Allocations**: API 54321, DB 54322, shadow DB 54320, Studio 54323.
+- **Auth URLs**: site_url="http://127.0.0.1:3000", additional_redirect_urls=["https://127.0.0.1:3000"].
+- **JWT Settings**: jwt_expiry=3600 seconds, enable_refresh_token_rotation=true, refresh_token_reuse_interval=10 seconds.
+- **Signup Control**: enable_signup=true (both top-level auth and auth.email).
+- **Confirmation Flags**: enable_confirmations=false, double_confirm_changes=true.
+- **Schema Exposure**: schemas=["public", "graphql_public"] define API surface.
+- **Query Limits**: max_rows=1000 caps result set sizes.
 
-**Token Lifecycle:**  
-JWT `expiry = 3600` seconds. Refresh token rotation enabled with `reuse_interval = 10` seconds to prevent race conditions during concurrent refresh attempts.
+## File Relationships
+
+config.toml references "http://127.0.0.1:3000" for auth flows, matching the Next.js app in [apps/web/](../apps/web/). The API schemas ["public", "graphql_public"] correlate with [apps/api/](../apps/api/)'s supabase.py client configuration. Port 54321 serves the API consumed by apps/api/app/core/supabase.py.

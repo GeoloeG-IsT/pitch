@@ -2,28 +2,68 @@
 
 # app
 
-FastAPI application root that assembles CORS-enabled HTTP server, configures global middleware, and mounts versioned API routes.
+FastAPI application root defining the API server instance, CORS policy, and routing surface for the document processing backend.
 
 ## Contents
 
-- **[main.py](./main.py)** — Exports `app: FastAPI` instance titled "Zeee Pitch Zooo API" v0.1.0; configures `CORSMiddleware` for localhost:3000 with credentials; mounts `health_router` at `/api/v1`.
+**[main.py](./main.py)** — `app: FastAPI` instance titled "Zeee Pitch Zooo API" v0.1.0; configures `CORSMiddleware` allowing localhost:3000 origin with credentials; mounts `health_router` from api/v1/health.py at `/api/v1` prefix.
 
 ## Subdirectories
 
-- **[api/v1/](./api/v1/)** — v1 API routes including `health_router` exposing `/health` endpoint with Supabase connectivity checks.
-- **[core/](./core/)** — Configuration layer exporting `Settings` class and `settings` singleton with Supabase credentials, environment mode, `.env` file support.
+**[core/](./core/)** — Environment configuration (`Settings` from config.py) and Supabase service client factory (`get_service_client()` from supabase.py) using service role key for privileged database access.
 
-## Architecture
+**[models/](./models/)** — Pydantic schemas: `ChunkRecord` (vector database record with embedding, chunk_type, positional metadata), `DocumentCreate` (upload request), `DocumentResponse`/`DocumentListResponse` (API serialization).
 
-Layered initialization: `main.py` → middleware → route registration. `core/config.py` provides centralized environment settings consumed by routers. Health checks validate external dependencies before request handling.
+**[services/](./services/)** — Document ingestion orchestration: `process_file` in pipeline.py routes to format-specific parsers (parsers/excel_parser.py, parsers/pdf_pipeline.py, parsers/markdown_pipeline.py), `node_to_chunk_record` in node_mapper.py transforms LlamaIndex BaseNode objects into database chunk dicts.
+
+## Stack
+
+- **Framework**: FastAPI 0.1.0
+- **Middleware**: `fastapi.middleware.cors.CORSMiddleware`
+- **Database Client**: Supabase Python SDK (service role authentication)
+- **Validation**: Pydantic BaseModel, BaseSettings
+- **Routing**: APIRouter mount pattern (api/v1/health.py → `/api/v1`)
+
+## CORS Policy
+
+- **Allowed Origins**: `http://localhost:3000`
+- **Allowed Methods**: `["*"]`
+- **Allowed Headers**: `["*"]`
+- **Credentials**: `allow_credentials=True`
 
 ## Behavioral Contracts
 
-**CORS Policy:**
-- Origin: `http://localhost:3000` (exact match)
-- Credentials: allowed
-- Methods: `*` (all HTTP methods)
-- Headers: `*` (all request headers)
+**File Type Vocabulary** (models/document.py):
+```python
+file_type: Literal["pdf", "xlsx", "md", "txt"]
+```
 
-**Route Prefix:**
-- All v1 routes mount under `/api/v1` (e.g., `/api/v1/health`)
+**Chunk Type Classification** (models/chunk.py):
+```python
+chunk_type: Literal["text", "table", "heading", "image_caption"]
+```
+
+**Token Counting Model** (services/node_mapper.py):
+```python
+tiktoken.encoding_for_model("text-embedding-3-small")
+```
+
+**Metadata Filtering** (services/node_mapper.py):
+```python
+_STRIP_KEYS = frozenset({"page_label", "source", "file_path", "file_name", "chunk_type", "total_pages"})
+```
+
+## Data Flow
+
+1. **API Request** → main.py routes to api/v1/ endpoints
+2. **File Upload** → services/pipeline.py dispatches by file_type to parsers/
+3. **Parsing** → Excel: direct chunk dicts; PDF/Markdown: LlamaIndex BaseNode lists
+4. **Normalization** → services/node_mapper.py transforms BaseNode → ChunkRecord schema
+5. **Database Write** → core/supabase.py `get_service_client()` inserts chunks using service role key
+
+## File Relationships
+
+- **main.py** imports `health_router` from api/v1/health.py
+- **services/pipeline.py** imports parsers from services/parsers/ subdirectory
+- **services/node_mapper.py** consumes LlamaIndex BaseNode objects, outputs models/chunk.py-compatible dicts
+- **core/supabase.py** uses `settings` from core/config.py for client initialization

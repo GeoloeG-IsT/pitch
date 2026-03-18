@@ -2,59 +2,69 @@
 
 # api
 
-Python FastAPI backend providing v1 REST API with Supabase integration, CORS-enabled health checks, and environment-based configuration.
+FastAPI backend service for document ingestion pipeline; receives file uploads (PDF/XLSX/Markdown), delegates to format-specific parsers producing LlamaIndex BaseNode streams, normalizes to database chunk records with embeddings, and persists to Supabase vector store via service role client.
 
 ## Contents
 
-- **[package.json](./package.json)** — Defines npm scripts wrapping `uv` commands: `dev` (uvicorn server on 0.0.0.0:8000), `build` (uv sync), `lint` (ruff), `test` (pytest -x), `typecheck` (mypy app/).
-- **[pyproject.toml](./pyproject.toml)** — Declares zeee-api project metadata (version 0.1.0, requires Python >=3.11); runtime dependencies (fastapi>=0.135.0, uvicorn, supabase, pydantic-settings); dev dependencies (pytest, ruff, mypy).
+**[package.json](./package.json)** — NPM manifest defining UV-based workflows: `dev` runs uvicorn on 0.0.0.0:8000 with hot reload, `build` executes `uv sync`, `test` invokes pytest with `-x`, `lint`/`typecheck` run ruff/mypy via `uv run`.
+
+**[pyproject.toml](./pyproject.toml)** — Python package metadata for zeee-api requiring >=3.11; runtime deps: fastapi>=0.135.0, uvicorn, supabase, llama-index-core>=0.14.18, llama-index-readers-file>=0.6.0, llama-index-embeddings-openai>=0.6.0, openpyxl>=3.1.5, pymupdf>=1.27.2; dev deps: pytest, ruff, mypy.
 
 ## Subdirectories
 
-- **[app/](./app/)** — FastAPI application root exporting `app: FastAPI` instance with CORS middleware, health route mounting at `/api/v1`.
+**[app/](./app/)** — FastAPI application root mounting `/api/v1` health endpoint, configuring CORS for localhost:3000, orchestrating document ingestion via `services/pipeline.py` routing to format-specific parsers, normalizing LlamaIndex BaseNode objects to `ChunkRecord` schemas using `services/node_mapper.py`, persisting to Supabase via `core/supabase.py` service role client.
 
 ## Stack
 
-**Runtime:** Python >=3.11, FastAPI, Uvicorn ASGI server  
-**Package Manager:** `uv` (wraps all Python tooling)  
-**Dev Tooling:** pytest (testing), ruff (linting), mypy (type checking)  
-**External Services:** Supabase (via python supabase client)  
-**Entry Point:** `app.main:app` (mounted by uvicorn via `npm run dev`)
+- **Runtime**: Python >=3.11
+- **Framework**: FastAPI >=0.135.0, uvicorn (ASGI server)
+- **Package Manager**: uv (scripts prefixed with `uv run`)
+- **Database**: Supabase Python SDK with service role authentication
+- **Embeddings/RAG**: llama-index-core >=0.14.18, llama-index-readers-file >=0.6.0, llama-index-embeddings-openai >=0.6.0
+- **File Parsing**: openpyxl >=3.1.5 (Excel), pymupdf >=1.27.2 (PDF)
+- **Config**: pydantic-settings, python-dotenv
+- **Testing**: pytest, pytest-asyncio, httpx
+- **Linting**: ruff, mypy
 
-## Workflow & Conventions
+## Entry Point
 
-**Development Server:**
-```bash
-npm run dev  # starts uvicorn with hot-reload on 0.0.0.0:8000
-```
+`app.main:app` — FastAPI instance served by `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
 
-**Testing:**
-```bash
-npm test  # pytest with fail-fast (-x) on tests/ directory
-```
+## Data Flow
 
-**Type Safety:**
-```bash
-npm run typecheck  # mypy on app/ directory
-```
-
-**Dependency Management:**
-```bash
-npm run build  # runs uv sync to install Python dependencies
-```
+1. **HTTP Request** → `app/main.py` routes to api/v1/ endpoints
+2. **File Upload** → `app/services/pipeline.py` `process_file()` dispatches by `file_type: Literal["pdf", "xlsx", "md", "txt"]`
+3. **Format-Specific Parsing** → `app/services/parsers/` subdirectory (excel_parser.py, pdf_pipeline.py, markdown_pipeline.py)
+4. **BaseNode Stream** → PDF/Markdown produce LlamaIndex BaseNode lists; Excel yields chunk dicts directly
+5. **Schema Normalization** → `app/services/node_mapper.py` `node_to_chunk_record()` transforms BaseNode to `ChunkRecord` (chunk_type, token_count, embedding, positional metadata)
+6. **Vector Store Insert** → `app/core/supabase.py` `get_service_client()` persists chunks using service role key
 
 ## Behavioral Contracts
 
-**CORS Policy (from app/main.py):**
-- Origin: `http://localhost:3000` (exact match)
-- Credentials: allowed
-- Methods: `*` (all HTTP methods)
-- Headers: `*` (all request headers)
+**File Type Routing** (app/models/document.py):
+```python
+file_type: Literal["pdf", "xlsx", "md", "txt"]
+```
 
-**API Versioning:**
-- All v1 routes mount under `/api/v1` prefix (e.g., `/api/v1/health`)
+**Chunk Classification** (app/models/chunk.py):
+```python
+chunk_type: Literal["text", "table", "heading", "image_caption"]
+```
 
-**Server Binding:**
-- Host: `0.0.0.0` (all interfaces)
-- Port: `8000`
-- Hot-reload enabled in dev mode
+**Embedding Model** (app/services/node_mapper.py):
+```python
+tiktoken.encoding_for_model("text-embedding-3-small")
+```
+
+**Metadata Stripping** (app/services/node_mapper.py):
+```python
+_STRIP_KEYS = frozenset({"page_label", "source", "file_path", "file_name", "chunk_type", "total_pages"})
+```
+
+## Workflow & Conventions
+
+- **Dependency Management**: All Python tooling invoked via `uv run` prefix
+- **Testing**: pytest with fail-fast (`-x` flag)
+- **Type Checking**: mypy targets `app/` directory
+- **Linting**: ruff checks entire workspace (`.`)
+- **Hot Reload**: uvicorn `--reload` flag enabled in `dev` script

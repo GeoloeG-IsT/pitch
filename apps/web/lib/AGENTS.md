@@ -2,12 +2,17 @@
 
 # lib
 
-Utility layer for `apps/web`, exporting helper functions for component styling and shared logic.
+UI utility functions for Next.js application — currently contains cn() for Tailwind CSS class composition.
 
 ## Contents
 
-- **[utils.ts](./utils.ts)** — exports `cn()`, a Tailwind CSS class merging utility via `clsx` and `tailwind-merge`
+- **[utils.ts](./utils.ts)** — exports cn() variadic function combining clsx and twMerge for conflict-free Tailwind class merging
 
 ## API Surface
 
-- `cn(...inputs: ClassValue[])` — merges Tailwind CSS classes, deduplicates conflicting utilities, handles conditionals; consumed by UI components in `apps/web/components/ui/`
+Single export: `cn(...inputs: ClassValue[])` accepts clsx-compatible inputs (strings, objects, arrays) and returns deduplicated Tailwind classes with specificity conflict resolution via tailwind-merge.
+
+## Dependencies
+
+- `clsx` — conditional className construction
+- `tailwind-merge` — Tailwind CSS class deduplication
