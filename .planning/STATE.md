@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 2 UI-SPEC approved
-last_updated: "2026-03-17T16:40:32.008Z"
-last_activity: "2026-03-17 -- Completed plan 01-02 (demo content: pitch deck, financial model, investment memo, tech architecture)"
+status: in-progress
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-18T07:57:46.136Z"
+last_activity: "2026-03-18 -- Completed 02-01 (core parsing pipeline: LlamaIndex PDF/Markdown parsers, Excel parser, node mapper)"
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_plans: 5
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Investors can ask natural language questions about any aspect of a startup's pitch and get accurate, source-cited answers instantly, without the founder needing to be in the room.
-**Current focus:** Phase 1 complete. Ready for Phase 2.
+**Current focus:** Phase 2 Document Ingestion -- core parsing pipeline complete, upload endpoints next.
 
 ## Current Position
 
-Phase: 1 of 8 (Foundation + Demo Content) -- COMPLETE
-Plan: 2 of 2 in current phase (all done)
-Status: Phase 1 complete
-Last activity: 2026-03-17 -- Completed plan 01-02 (demo content: pitch deck, financial model, investment memo, tech architecture)
+Phase: 2 of 8 (Document Ingestion)
+Plan: 1 of 3 in current phase (02-01 complete)
+Status: In progress
+Last activity: 2026-03-18 -- Completed 02-01 (core parsing pipeline: LlamaIndex PDF/Markdown parsers, Excel parser, node mapper)
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Progress: [██████████] 100%
 
 *Updated after each plan completion*
 | Phase 01 P02 | 10min | 2 tasks | 10 files |
+| Phase 02 P01 | 7min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,9 @@ Recent decisions affecting current work:
 - [Phase 01]: Hatchling build backend with packages=['.'] for scripts-only Python project
 - [Phase 01]: Generated output in content/output/ excluded via .gitignore (reproducible from source)
 - [Phase 01]: Cross-references use natural language patterns for RAG stress-testing
+- 02-01: PyMuPDFReader metadata uses 'source' key (not 'page_label') -- node mapper handles both
+- 02-01: pymupdf added as explicit dependency for PyMuPDFReader runtime
+- 02-01: IngestionPipeline without vector_store pattern -- manual mapping to chunks table schema
 
 ### Pending Todos
 
@@ -75,12 +79,12 @@ None yet.
 
 ### Blockers/Concerns
 
-- Research gap: Excel parsing approach (openpyxl vs direct Excel RAG) needs validation in Phase 2
 - Research gap: Confidence threshold calibration requires empirical tuning with demo content in Phase 5
-- Research gap: Embedding model choice (OpenAI text-embedding-3-small vs Voyage AI) -- confirm before Phase 2
+- RESOLVED: Excel parsing uses openpyxl + gpt-4o-mini summaries (validated in 02-01)
+- RESOLVED: Embedding model is OpenAI text-embedding-3-small (confirmed in 02-01)
 
 ## Session Continuity
 
-Last session: 2026-03-17T16:40:32.005Z
-Stopped at: Phase 2 UI-SPEC approved
-Resume file: .planning/phases/02-document-ingestion/02-UI-SPEC.md
+Last session: 2026-03-18T07:56:15Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: .planning/phases/02-document-ingestion/02-02-PLAN.md

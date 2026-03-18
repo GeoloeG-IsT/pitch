@@ -9,10 +9,10 @@ Requirements for the PoC demo. Each maps to roadmap phases.
 
 ### Document Ingestion
 
-- [ ] **INGEST-01**: Founder can upload PDF pitch deck and have it parsed into searchable sections
-- [ ] **INGEST-02**: Founder can upload text documents (memos, architecture docs) for RAG indexing
-- [ ] **INGEST-03**: Founder can upload Excel financial models with structured table extraction
-- [ ] **INGEST-04**: System maps document sections to preserve structure (slides, chapters, tables) for section-aware retrieval
+- [x] **INGEST-01**: Founder can upload PDF pitch deck and have it parsed into searchable sections
+- [x] **INGEST-02**: Founder can upload text documents (memos, architecture docs) for RAG indexing
+- [x] **INGEST-03**: Founder can upload Excel financial models with structured table extraction
+- [x] **INGEST-04**: System maps document sections to preserve structure (slides, chapters, tables) for section-aware retrieval
 
 ### Document Viewer
 
@@ -118,10 +118,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INGEST-01 | Phase 2 | Pending |
-| INGEST-02 | Phase 2 | Pending |
-| INGEST-03 | Phase 2 | Pending |
-| INGEST-04 | Phase 2 | Pending |
+| INGEST-01 | Phase 2 | Complete |
+| INGEST-02 | Phase 2 | Complete |
+| INGEST-03 | Phase 2 | Complete |
+| INGEST-04 | Phase 2 | Complete |
 | VIEW-01 | Phase 4 | Pending |
 | VIEW-02 | Phase 4 | Pending |
 | VIEW-03 | Phase 4 | Pending |
