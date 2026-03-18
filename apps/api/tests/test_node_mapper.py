@@ -63,8 +63,22 @@ class TestNodeToChunkRecord:
         assert len(result["embedding"]) == EMBEDDING_DIM
         assert all(isinstance(v, float) for v in result["embedding"])
 
+    def test_pdf_node_with_source_key(self):
+        """Newer PyMuPDFReader uses 'source' instead of 'page_label'."""
+        node = _make_node(
+            text="Slide 5 content.",
+            metadata={"source": "5", "file_path": "/tmp/deck.pdf", "total_pages": 13},
+            embedding=ZERO_EMBEDDING,
+        )
+        result = node_to_chunk_record(node, DOC_ID)
+
+        assert result["page_number"] == 5
+        assert result["section_number"] == 5
+        assert "source" not in result["metadata"]
+        assert "total_pages" not in result["metadata"]
+
     def test_strips_internal_metadata_keys(self):
-        """Output metadata should NOT contain file_path, file_name, page_label."""
+        """Output metadata should NOT contain file_path, file_name, page_label, source, total_pages."""
         node = _make_node(
             metadata={
                 "page_label": "1",

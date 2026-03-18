@@ -18,7 +18,8 @@ async def test_pdf_pipeline_returns_embedded_nodes(sample_pdf_bytes, mock_openai
     for node in nodes:
         assert node.embedding is not None, "Each node must have an embedding"
         assert len(node.embedding) == EMBEDDING_DIM
-        assert "page_label" in node.metadata
+        # PyMuPDFReader uses "source" (page number) in current versions
+        assert "source" in node.metadata or "page_label" in node.metadata
 
 
 @pytest.mark.asyncio
