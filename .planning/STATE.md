@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-18T07:57:46.136Z"
-last_activity: "2026-03-18 -- Completed 02-01 (core parsing pipeline: LlamaIndex PDF/Markdown parsers, Excel parser, node mapper)"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-03-18T08:44:42.000Z"
+last_activity: "2026-03-18 -- Completed 02-02 (document management API: CRUD endpoints, ingestion orchestrator, background tasks)"
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 70
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 ## Current Position
 
 Phase: 2 of 8 (Document Ingestion)
-Plan: 1 of 3 in current phase (02-01 complete)
+Plan: 2 of 3 in current phase (02-02 complete)
 Status: In progress
-Last activity: 2026-03-18 -- Completed 02-01 (core parsing pipeline: LlamaIndex PDF/Markdown parsers, Excel parser, node mapper)
+Last activity: 2026-03-18 -- Completed 02-02 (document management API: CRUD endpoints, ingestion orchestrator, background tasks)
 
-Progress: [██████░░░░] 60%
+Progress: [███████░░░] 70%
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress: [██████░░░░] 60%
 *Updated after each plan completion*
 | Phase 01 P02 | 10min | 2 tasks | 10 files |
 | Phase 02 P01 | 7min | 2 tasks | 13 files |
+| Phase 02 P02 | 5min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,9 @@ Recent decisions affecting current work:
 - 02-01: PyMuPDFReader metadata uses 'source' key (not 'page_label') -- node mapper handles both
 - 02-01: pymupdf added as explicit dependency for PyMuPDFReader runtime
 - 02-01: IngestionPipeline without vector_store pattern -- manual mapping to chunks table schema
+- 02-02: DEMO_USER_ID hardcoded UUID for auth bypass until Phase 6
+- 02-02: Batch chunk insert in groups of 50 to avoid Supabase payload limits
+- 02-02: File bytes read eagerly before background task (UploadFile closes after endpoint return)
 
 ### Pending Todos
 
@@ -85,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T07:56:15Z
-Stopped at: Completed 02-01-PLAN.md
-Resume file: .planning/phases/02-document-ingestion/02-02-PLAN.md
+Last session: 2026-03-18T08:44:42Z
+Stopped at: Completed 02-02-PLAN.md
+Resume file: .planning/phases/02-document-ingestion/02-03-PLAN.md

@@ -42,8 +42,8 @@ Requirements for the PoC demo. Each maps to roadmap phases.
 
 ### Content Management
 
-- [ ] **MGMT-01**: Founder can upload, organize, and manage pitch documents
-- [ ] **MGMT-02**: Founder can update documents and have RAG index refresh
+- [x] **MGMT-01**: Founder can upload, organize, and manage pitch documents
+- [x] **MGMT-02**: Founder can update documents and have RAG index refresh
 
 ### Analytics
 
@@ -136,8 +136,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-02 | Phase 6 | Pending |
 | AUTH-03 | Phase 6 | Pending |
 | AUTH-04 | Phase 6 | Pending |
-| MGMT-01 | Phase 2 | Pending |
-| MGMT-02 | Phase 2 | Pending |
+| MGMT-01 | Phase 2 | Complete |
+| MGMT-02 | Phase 2 | Complete |
 | ANLYT-01 | Phase 7 | Pending |
 | ANLYT-02 | Phase 7 | Pending |
 | ANLYT-03 | Phase 7 | Pending |
