@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PitchDocument } from "@/lib/pitch-api";
@@ -19,6 +18,8 @@ interface TOCSidebarProps {
   onSectionClick: (id: string) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
 }
 
 function TOCContent({
@@ -70,8 +71,9 @@ export function TOCSidebar({
   onSectionClick,
   open,
   onOpenChange,
+  collapsed,
+  onCollapsedChange,
 }: TOCSidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
 
   const handleSectionClick = (id: string) => {
     onSectionClick(id);
@@ -91,7 +93,7 @@ export function TOCSidebar({
           <Button
             variant="ghost"
             size="icon-xs"
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={() => onCollapsedChange(!collapsed)}
             aria-label={collapsed ? "Expand table of contents" : "Collapse table of contents"}
           >
             {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}

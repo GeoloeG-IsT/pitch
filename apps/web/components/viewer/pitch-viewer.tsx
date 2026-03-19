@@ -19,6 +19,7 @@ export function PitchViewer() {
   const [error, setError] = useState<string | null>(null);
   const { activeId, handleInView } = useActiveSection();
   const [tocOpen, setTocOpen] = useState(false);
+  const [tocCollapsed, setTocCollapsed] = useState(false);
   const [qaOpen, setQaOpen] = useState(false);
   const [initialQuestion, setInitialQuestion] = useState<string | null>(null);
 
@@ -143,6 +144,8 @@ export function PitchViewer() {
           onSectionClick={scrollToSection}
           open={tocOpen}
           onOpenChange={setTocOpen}
+          collapsed={tocCollapsed}
+          onCollapsedChange={setTocCollapsed}
         />
         <main
           className={cn(
@@ -160,16 +163,18 @@ export function PitchViewer() {
             ))}
           </div>
 
-          <FloatingInput
-            onSubmit={(question) => {
-              setInitialQuestion(question);
-              setQaOpen(true);
-            }}
-            visible={!qaOpen && data.documents.length > 0}
-            sectionName={activeSectionName}
-          />
         </main>
       </div>
+
+      <FloatingInput
+        onSubmit={(question) => {
+          setInitialQuestion(question);
+          setQaOpen(true);
+        }}
+        visible={!qaOpen && data.documents.length > 0}
+        sectionName={activeSectionName}
+        contentLeft={tocCollapsed ? "40px" : "240px"}
+      />
 
       <QAPanel
         open={qaOpen}

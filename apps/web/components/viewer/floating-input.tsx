@@ -11,9 +11,11 @@ interface FloatingInputProps {
   visible: boolean;
   sectionName: string | null;
   className?: string;
+  /** CSS left offset for the content area (e.g. sidebar width) */
+  contentLeft?: string;
 }
 
-export function FloatingInput({ onSubmit, visible, sectionName, className }: FloatingInputProps) {
+export function FloatingInput({ onSubmit, visible, sectionName, className, contentLeft = "0px" }: FloatingInputProps) {
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -48,11 +50,12 @@ export function FloatingInput({ onSubmit, visible, sectionName, className }: Flo
     <form
       onSubmit={handleSubmit}
       className={cn(
-        "sticky bottom-6 left-1/2 -translate-x-1/2 z-50 mx-auto",
+        "fixed bottom-6 z-50 -translate-x-1/2",
         "w-[min(560px,calc(100%-2rem))]",
         "flex items-center gap-2 rounded-full bg-card border-2 border-black shadow-xl px-4 py-2",
         className
       )}
+      style={{ left: `calc(${contentLeft} + (100% - ${contentLeft}) / 2)` }}
     >
       <Input
         ref={inputRef}
