@@ -65,12 +65,14 @@ export function SiteNav() {
           </>
         )}
       </nav>
-      <div className="ml-auto flex items-center">
+      <div className="ml-auto flex items-center gap-2">
         {loading ? (
           <Skeleton className="h-8 w-8 rounded-full" />
         ) : user ? (
           <UserAvatarMenu user={user} role={role} />
-        ) : null}
+        ) : (
+          <span className="text-xs text-muted-foreground">not signed in</span>
+        )}
       </div>
     </header>
   );

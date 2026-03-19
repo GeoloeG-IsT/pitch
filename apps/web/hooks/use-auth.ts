@@ -20,38 +20,25 @@ export function useAuth(): AuthState {
   useEffect(() => {
     const supabase = createClient();
 
-    async function getSession() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("users")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-        setState({ user, role: profile?.role ?? null, loading: false });
-      } else {
-        setState({ user: null, role: null, loading: false });
-      }
-    }
-
-    getSession();
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const { data: profile } = await supabase
-          .from("users")
-          .select("role")
-          .eq("id", session.user.id)
-          .single();
-        setState({
-          user: session.user,
-          role: profile?.role ?? null,
-          loading: false,
-        });
+        // Set user immediately, fetch role in background
+        setState({ user: session.user, role: null, loading: false });
+
+        try {
+          const { data: profile } = await supabase
+            .from("users")
+            .select("role")
+            .eq("id", session.user.id)
+            .single();
+          if (profile?.role) {
+            setState({ user: session.user, role: profile.role, loading: false });
+          }
+        } catch {
+          // Role fetch failed — user still shown, role stays null
+        }
       } else {
         setState({ user: null, role: null, loading: false });
       }

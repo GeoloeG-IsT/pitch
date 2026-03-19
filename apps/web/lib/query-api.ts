@@ -24,7 +24,7 @@ import { getAuthHeaders } from "@/lib/api";
 const API_BASE = "/api/v1";
 
 export async function createQuery(question: string): Promise<QueryResponse> {
-  const authHeaders = await getAuthHeaders();
+  const authHeaders = getAuthHeaders();
   const res = await fetch(`${API_BASE}/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeaders },

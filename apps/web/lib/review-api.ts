@@ -26,7 +26,7 @@ export async function fetchReviews(
 ): Promise<ReviewItem[]> {
   const res = await fetch(
     `${API_BASE}/reviews?status=${encodeURIComponent(status)}`,
-    { headers: await getAuthHeaders() }
+    { headers: getAuthHeaders() }
   );
   if (!res.ok) throw new Error(`Failed to fetch reviews: ${res.statusText}`);
   return res.json();
@@ -36,7 +36,7 @@ export async function submitReview(
   queryId: string,
   action: ReviewAction
 ): Promise<ReviewItem> {
-  const authHeaders = await getAuthHeaders();
+  const authHeaders = getAuthHeaders();
   const res = await fetch(`${API_BASE}/reviews/${queryId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeaders },

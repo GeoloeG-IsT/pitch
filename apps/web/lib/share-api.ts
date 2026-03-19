@@ -15,7 +15,7 @@ export async function createShareToken(
   expiryDays: number = 14,
   investorEmail?: string
 ): Promise<ShareToken> {
-  const headers = await getAuthHeaders()
+  const headers = getAuthHeaders()
   const res = await fetch(`${API_BASE}/auth/share-tokens`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
@@ -29,14 +29,14 @@ export async function createShareToken(
 }
 
 export async function listShareTokens(): Promise<ShareToken[]> {
-  const headers = await getAuthHeaders()
+  const headers = getAuthHeaders()
   const res = await fetch(`${API_BASE}/auth/share-tokens`, { headers })
   if (!res.ok) throw new Error(`Failed to list share tokens: ${res.statusText}`)
   return res.json()
 }
 
 export async function revokeShareToken(tokenId: string): Promise<void> {
-  const headers = await getAuthHeaders()
+  const headers = getAuthHeaders()
   const res = await fetch(`${API_BASE}/auth/share-tokens/${tokenId}`, {
     method: 'DELETE',
     headers,

@@ -16,6 +16,7 @@ dependencies = [
     "python-multipart>=0.0.22",
     "pymupdf>=1.27.2",
     "cohere>=5.20.0",
+    "pyjwt>=2.12.1",
 ]
 
 [dependency-groups]

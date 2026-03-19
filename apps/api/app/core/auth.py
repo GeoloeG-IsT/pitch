@@ -24,12 +24,29 @@ async def get_current_user(
             detail="Missing authorization header",
         )
     try:
-        payload = jwt.decode(
-            credentials.credentials,
-            settings.supabase_jwt_secret,
-            algorithms=["HS256"],
-            audience="authenticated",
-        )
+        # Try HS256 first (legacy), then ES256 (newer Supabase local dev)
+        token = credentials.credentials
+        try:
+            payload = jwt.decode(
+                token,
+                settings.supabase_jwt_secret,
+                algorithms=["HS256"],
+                audience="authenticated",
+            )
+        except (jwt.InvalidSignatureError, jwt.InvalidAlgorithmError):
+            # ES256: fetch JWKS from Supabase auth
+            import json as _json
+            import httpx
+            jwks_url = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
+            jwks = httpx.get(jwks_url).json()
+            jwk_data = _json.dumps(jwks["keys"][0])
+            public_key = jwt.algorithms.ECAlgorithm.from_jwk(jwk_data)
+            payload = jwt.decode(
+                token,
+                public_key,
+                algorithms=["ES256"],
+                audience="authenticated",
+            )
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(

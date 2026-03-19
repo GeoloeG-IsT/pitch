@@ -7,26 +7,29 @@ const FOUNDER_ONLY_PATHS = ["/dashboard", "/documents"];
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
+  const { user, supabase, supabaseResponse } = await updateSession(request);
+
+  // If Supabase is not configured, pass through all requests
+  if (!supabase) {
+    return supabaseResponse;
+  }
+
   // /pitch with valid share token -- pass through (token validated in page)
   if (pathname === "/pitch" && searchParams.has("token")) {
-    const { supabaseResponse } = await updateSession(request);
     return supabaseResponse;
   }
 
   // Public paths -- no auth required, just refresh session
   if (PUBLIC_PATHS.includes(pathname)) {
-    const { supabaseResponse } = await updateSession(request);
     return supabaseResponse;
   }
 
-  // Auth callback -- pass through
-  if (pathname.startsWith("/auth/")) {
-    const { supabaseResponse } = await updateSession(request);
+  // Auth callback and internal API routes -- pass through
+  if (pathname.startsWith("/auth/") || pathname.startsWith("/api/")) {
     return supabaseResponse;
   }
 
   // All other paths require auth
-  const { user, supabase, supabaseResponse } = await updateSession(request);
 
   if (!user) {
     const url = request.nextUrl.clone();
