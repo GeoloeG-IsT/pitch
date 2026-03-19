@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchPitch, type PitchResponse } from "@/lib/pitch-api";
@@ -9,13 +9,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TOCSidebar } from "./toc-sidebar";
 import { DocumentGroup } from "./document-group";
+import { FABButton } from "@/components/viewer/fab-button";
+import { QAPanel } from "@/components/qa/qa-panel";
+import { useActiveSection } from "@/hooks/use-active-section";
 
 export function PitchViewer() {
   const [data, setData] = useState<PitchResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const { activeId, handleInView } = useActiveSection();
   const [tocOpen, setTocOpen] = useState(false);
+  const [qaOpen, setQaOpen] = useState(false);
 
   useEffect(() => {
     fetchPitch()
@@ -28,15 +32,32 @@ export function PitchViewer() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleInView = useCallback((id: string, inView: boolean) => {
-    if (inView) setActiveId(id);
-  }, []);
+  const activeSectionName = useMemo(() => {
+    if (!activeId || !data) return null;
+    for (const doc of data.documents) {
+      const chunk = doc.chunks.find((c) => c.id === activeId);
+      if (chunk) {
+        // For heading chunks, use content directly
+        if (chunk.chunk_type === "heading") return chunk.content;
+        // Find preceding heading in same document
+        const idx = doc.chunks.indexOf(chunk);
+        for (let i = idx - 1; i >= 0; i--) {
+          if (doc.chunks[i].chunk_type === "heading")
+            return doc.chunks[i].content;
+        }
+        return doc.title; // Fallback to document title
+      }
+    }
+    return null;
+  }, [activeId, data]);
 
   const scrollToSection = useCallback((id: string) => {
     const el = document.getElementById(`section-${id}`);
     if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top, behavior: "smooth" });
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Brief ring highlight (2s) per UI-SPEC Animation Contract
+      el.classList.add("ring-2", "ring-primary/30");
+      setTimeout(() => el.classList.remove("ring-2", "ring-primary/30"), 2000);
     }
   }, []);
 
@@ -122,7 +143,12 @@ export function PitchViewer() {
           open={tocOpen}
           onOpenChange={setTocOpen}
         />
-        <main className="flex-1 py-16 px-4 lg:px-8">
+        <main
+          className={cn(
+            "flex-1 py-16 px-4 lg:px-8 transition-[padding] duration-300",
+            qaOpen && "lg:pr-[460px]"
+          )}
+        >
           <div className="max-w-5xl mx-auto">
             {data.documents.map((doc) => (
               <DocumentGroup
@@ -134,6 +160,19 @@ export function PitchViewer() {
           </div>
         </main>
       </div>
+
+      <FABButton
+        onClick={() => setQaOpen(true)}
+        visible={!qaOpen && data.documents.length > 0}
+      />
+
+      <QAPanel
+        open={qaOpen}
+        onOpenChange={setQaOpen}
+        sectionName={activeSectionName}
+        sectionId={activeId}
+        onScrollToSection={scrollToSection}
+      />
     </div>
   );
 }
