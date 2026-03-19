@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PitchDocument } from "@/lib/pitch-api";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
@@ -68,6 +71,8 @@ export function TOCSidebar({
   open,
   onOpenChange,
 }: TOCSidebarProps) {
+  const [collapsed, setCollapsed] = useState(false);
+
   const handleSectionClick = (id: string) => {
     onSectionClick(id);
     onOpenChange(false);
@@ -76,14 +81,31 @@ export function TOCSidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="w-60 border-r bg-card sticky top-14 h-[calc(100vh-3.5rem)] hidden lg:block">
-        <ScrollArea className="h-full">
-          <TOCContent
-            documents={documents}
-            activeId={activeId}
-            onSectionClick={onSectionClick}
-          />
-        </ScrollArea>
+      <aside
+        className={cn(
+          "border-r bg-card sticky top-14 h-[calc(100vh-3.5rem)] hidden lg:flex flex-col transition-[width] duration-200",
+          collapsed ? "w-10" : "w-60"
+        )}
+      >
+        <div className={cn("flex items-center border-b", collapsed ? "justify-center p-1" : "justify-end px-2 py-1")}>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand table of contents" : "Collapse table of contents"}
+          >
+            {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </Button>
+        </div>
+        {!collapsed && (
+          <ScrollArea className="flex-1">
+            <TOCContent
+              documents={documents}
+              activeId={activeId}
+              onSectionClick={onSectionClick}
+            />
+          </ScrollArea>
+        )}
       </aside>
 
       {/* Mobile drawer */}
