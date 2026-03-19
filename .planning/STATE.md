@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-03-18T08:44:42.000Z"
-last_activity: "2026-03-18 -- Completed 02-02 (document management API: CRUD endpoints, ingestion orchestrator, background tasks)"
+stopped_at: Completed 02-03-PLAN.md (Phase 2 complete)
+last_updated: "2026-03-19T11:10:07.525Z"
+last_activity: "2026-03-19 -- Completed 02-03 (document management UI: upload, status polling, delete/replace)"
 progress:
   total_phases: 8
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
-  percent: 70
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Investors can ask natural language questions about any aspect of a startup's pitch and get accurate, source-cited answers instantly, without the founder needing to be in the room.
-**Current focus:** Phase 2 Document Ingestion -- core parsing pipeline complete, upload endpoints next.
+**Current focus:** Phase 2 Document Ingestion complete. Ready for Phase 3 RAG Query Engine.
 
 ## Current Position
 
-Phase: 2 of 8 (Document Ingestion)
-Plan: 2 of 3 in current phase (02-02 complete)
-Status: In progress
-Last activity: 2026-03-18 -- Completed 02-02 (document management API: CRUD endpoints, ingestion orchestrator, background tasks)
+Phase: 2 of 8 (Document Ingestion) -- COMPLETE
+Plan: 3 of 3 in current phase (02-03 complete, phase done)
+Status: Phase 2 complete, ready for Phase 3
+Last activity: 2026-03-19 -- Completed 02-03 (document management UI: upload, status polling, delete/replace)
 
-Progress: [███████░░░] 70%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [███████░░░] 70%
 | Phase 01 P02 | 10min | 2 tasks | 10 files |
 | Phase 02 P01 | 7min | 2 tasks | 13 files |
 | Phase 02 P02 | 5min | 2 tasks | 5 files |
+| Phase 02 P03 | 15min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - 02-02: DEMO_USER_ID hardcoded UUID for auth bypass until Phase 6
 - 02-02: Batch chunk insert in groups of 50 to avoid Supabase payload limits
 - 02-02: File bytes read eagerly before background task (UploadFile closes after endpoint return)
+- 02-03: Sonner for toast notifications (shadcn integration, non-blocking UX)
+- 02-03: 3-second polling interval for document status updates
+- 02-03: Deduplicate uploads by filename (replace existing rather than creating duplicate)
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T08:44:42Z
-Stopped at: Completed 02-02-PLAN.md
-Resume file: .planning/phases/02-document-ingestion/02-03-PLAN.md
+Last session: 2026-03-19T11:10:07Z
+Stopped at: Completed 02-03-PLAN.md (Phase 2 complete)
+Resume file: .planning/phases/03-rag-query-engine/ (Phase 3 next)
