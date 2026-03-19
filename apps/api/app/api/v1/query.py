@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 
+from app.core.auth import get_current_user, validate_share_token
 from app.core.supabase import get_service_client
 from app.models.query import QueryCreate, QueryResponse
 from app.services.query_engine import run_query_pipeline
@@ -13,19 +14,19 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["query"])
 
-# TODO(Phase 6): Replace with authenticated user from request
-DEMO_USER_ID = "00000000-0000-0000-0000-000000000000"
-
 
 @router.post("/query", status_code=201)
-async def create_query(request: QueryCreate):
+async def create_query(request: QueryCreate, user: dict = Depends(get_current_user)):
     """Create a query record. Returns query_id for WebSocket streaming."""
     client = get_service_client()
-    result = client.table("queries").insert({
+    insert_data: dict = {
         "question": request.question,
-        "user_id": DEMO_USER_ID,
+        "user_id": user["sub"],
         "status": "pending",
-    }).execute()
+    }
+    if hasattr(request, "share_token_id") and request.share_token_id:
+        insert_data["share_token_id"] = request.share_token_id
+    result = client.table("queries").insert(insert_data).execute()
 
     row = result.data[0]
     return QueryResponse(
@@ -37,8 +38,31 @@ async def create_query(request: QueryCreate):
 
 
 @router.websocket("/query/{query_id}/stream")
-async def stream_query(websocket: WebSocket, query_id: str):
+async def stream_query(
+    websocket: WebSocket,
+    query_id: str,
+    access_token: str | None = Query(None),
+    token: str | None = Query(None),
+):
     """Stream AI answer tokens over WebSocket."""
+    # Authenticate via JWT access_token or share token
+    if access_token:
+        import jwt as pyjwt
+        from app.core.config import settings
+        try:
+            pyjwt.decode(access_token, settings.supabase_jwt_secret, algorithms=["HS256"], audience="authenticated")
+        except pyjwt.InvalidTokenError:
+            await websocket.close(code=4001)
+            return
+    elif token:
+        result = await validate_share_token(token)
+        if not result:
+            await websocket.close(code=4001)
+            return
+    else:
+        await websocket.close(code=4001)
+        return
+
     await websocket.accept()
 
     client = get_service_client()

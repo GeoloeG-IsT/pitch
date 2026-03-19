@@ -5,9 +5,10 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.v1.notifications import broadcast_approved_answer
+from app.core.auth import get_current_user
 from app.core.supabase import get_service_client
 from app.models.query import ReviewAction, ReviewItem
 
@@ -15,12 +16,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["reviews"])
 
-# TODO(Phase 6): Replace with authenticated user from request
-DEMO_USER_ID = "00000000-0000-0000-0000-000000000000"
-
 
 @router.get("/reviews")
-async def list_reviews(status: str = "pending_review") -> list[ReviewItem]:
+async def list_reviews(status: str = "pending_review", user: dict = Depends(get_current_user)) -> list[ReviewItem]:
     """List queries filtered by review_status."""
     client = get_service_client()
     result = (
@@ -50,7 +48,7 @@ async def list_reviews(status: str = "pending_review") -> list[ReviewItem]:
 
 
 @router.put("/reviews/{query_id}")
-async def update_review(query_id: str, body: ReviewAction) -> ReviewItem:
+async def update_review(query_id: str, body: ReviewAction, user: dict = Depends(get_current_user)) -> ReviewItem:
     """Approve, edit, or reject a pending review."""
     client = get_service_client()
 
@@ -75,7 +73,7 @@ async def update_review(query_id: str, body: ReviewAction) -> ReviewItem:
 
     now = datetime.now(timezone.utc).isoformat()
     update_data: dict = {
-        "reviewed_by": DEMO_USER_ID,
+        "reviewed_by": user["sub"],
         "reviewed_at": now,
         "status": "complete",
     }

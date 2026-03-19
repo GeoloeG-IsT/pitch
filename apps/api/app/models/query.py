@@ -18,6 +18,7 @@ class Citation(BaseModel):
 
 class QueryCreate(BaseModel):
     question: str
+    share_token_id: str | None = None
 
 
 class QueryResponse(BaseModel):

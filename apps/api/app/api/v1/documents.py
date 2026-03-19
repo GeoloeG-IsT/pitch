@@ -6,16 +6,14 @@ import os
 
 from pydantic import BaseModel
 
-from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 
+from app.core.auth import get_current_user
 from app.core.supabase import get_service_client
 from app.models.document import DocumentListResponse, DocumentResponse
 from app.services.ingestion import delete_document_chunks, process_document
 
 router = APIRouter(tags=["documents"])
-
-# TODO(Phase 6): Replace with authenticated user from request
-DEMO_USER_ID = "00000000-0000-0000-0000-000000000000"
 
 _SUPPORTED_EXTENSIONS: dict[str, str] = {
     ".pdf": "pdf",
@@ -64,6 +62,7 @@ async def upload_document(
     file: UploadFile = File(...),
     title: str = Form(None),
     purpose: str = Form("pitch"),
+    user: dict = Depends(get_current_user),
 ):
     """Upload a document for ingestion."""
     if not file.filename:
@@ -86,7 +85,7 @@ async def upload_document(
     existing = (
         client.table("documents")
         .select("id")
-        .eq("user_id", DEMO_USER_ID)
+        .eq("user_id", user["sub"])
         .eq("file_name", file.filename)
         .execute()
     )
@@ -115,7 +114,7 @@ async def upload_document(
             client.table("documents")
             .insert(
                 {
-                    "user_id": DEMO_USER_ID,
+                    "user_id": user["sub"],
                     "title": title,
                     "file_name": file.filename,
                     "file_type": file_type,
@@ -136,7 +135,7 @@ async def upload_document(
 
 
 @router.get("/documents")
-async def list_documents():
+async def list_documents(user: dict = Depends(get_current_user)):
     """List all documents ordered by creation date."""
     client = get_service_client()
     result = (
@@ -161,7 +160,7 @@ async def list_documents():
 
 
 @router.get("/documents/{doc_id}")
-async def get_document(doc_id: str):
+async def get_document(doc_id: str, user: dict = Depends(get_current_user)):
     """Get a single document by ID (supports polling for status)."""
     client = get_service_client()
     try:
@@ -190,7 +189,7 @@ class PurposeUpdate(BaseModel):
 
 
 @router.patch("/documents/{doc_id}/purpose")
-async def update_document_purpose(doc_id: str, body: PurposeUpdate):
+async def update_document_purpose(doc_id: str, body: PurposeUpdate, user: dict = Depends(get_current_user)):
     """Update a document's purpose (pitch or rag)."""
     if body.purpose not in ("pitch", "rag"):
         raise HTTPException(status_code=400, detail="purpose must be 'pitch' or 'rag'")
@@ -224,7 +223,7 @@ async def update_document_purpose(doc_id: str, body: PurposeUpdate):
 
 
 @router.delete("/documents/{doc_id}", status_code=204)
-async def delete_document(doc_id: str):
+async def delete_document(doc_id: str, user: dict = Depends(get_current_user)):
     """Delete a document and all its chunks (FK CASCADE)."""
     client = get_service_client()
 
@@ -247,6 +246,7 @@ async def reupload_document(
     doc_id: str,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
+    user: dict = Depends(get_current_user),
 ):
     """Replace a document's file and re-run ingestion."""
     client = get_service_client()
