@@ -8,11 +8,11 @@ FastAPI backend service for document ingestion pipeline; receives file uploads (
 
 **[package.json](./package.json)** — NPM manifest defining UV-based workflows: `dev` runs uvicorn on 0.0.0.0:8000 with hot reload, `build` executes `uv sync`, `test` invokes pytest with `-x`, `lint`/`typecheck` run ruff/mypy via `uv run`.
 
-**[pyproject.toml](./pyproject.toml)** — Python package metadata for zeee-api requiring >=3.11; runtime deps: fastapi>=0.135.0, uvicorn, supabase, llama-index-core>=0.14.18, llama-index-readers-file>=0.6.0, llama-index-embeddings-openai>=0.6.0, openpyxl>=3.1.5, pymupdf>=1.27.2; dev deps: pytest, ruff, mypy.
+**[pyproject.toml](./pyproject.toml)** — Python package metadata for zeee-api requiring >=3.11; runtime deps: fastapi>=0.135.0, uvicorn, supabase, llama-index-core>=0.14.18, llama-index-readers-file>=0.6.0, llama-index-embeddings-openai>=0.6.0, openpyxl>=3.1.5, python-multipart>=0.0.22, pymupdf>=1.27.2; dev deps: pytest, pytest-asyncio, httpx, ruff, mypy.
 
 ## Subdirectories
 
-**[app/](./app/)** — FastAPI application root mounting `/api/v1` health endpoint, configuring CORS for localhost:3000, orchestrating document ingestion via `services/pipeline.py` routing to format-specific parsers, normalizing LlamaIndex BaseNode objects to `ChunkRecord` schemas using `services/node_mapper.py`, persisting to Supabase via `core/supabase.py` service role client.
+**[app/](./app/)** — FastAPI application root defining `app: FastAPI` instance titled "Zeee Pitch Zooo API" v0.1.0; configures `CORSMiddleware` allowing localhost:3000 origin with credentials; mounts `health_router` and `documents_router` from api/v1/ at `/api/v1` prefix; sets `OPENAI_API_KEY` in `os.environ` from `settings.openai_api_key` for LlamaIndex compatibility; orchestrates document ingestion via `services/ingestion.py` `process_document` transitioning status (pending → processing → ready/error) with batch chunk insertion (50 per batch); routes to format-specific parsers via `services/pipeline.py` `process_file`; normalizes LlamaIndex BaseNode objects to `ChunkRecord` schemas using `services/node_mapper.py` `node_to_chunk_record` with chunk_type inference and token counting; persists to Supabase via `core/supabase.py` `get_service_client()` service role client.
 
 ## Stack
 
@@ -21,7 +21,7 @@ FastAPI backend service for document ingestion pipeline; receives file uploads (
 - **Package Manager**: uv (scripts prefixed with `uv run`)
 - **Database**: Supabase Python SDK with service role authentication
 - **Embeddings/RAG**: llama-index-core >=0.14.18, llama-index-readers-file >=0.6.0, llama-index-embeddings-openai >=0.6.0
-- **File Parsing**: openpyxl >=3.1.5 (Excel), pymupdf >=1.27.2 (PDF)
+- **File Parsing**: openpyxl >=3.1.5 (Excel), pymupdf >=1.27.2 (PDF), python-multipart >=0.0.22
 - **Config**: pydantic-settings, python-dotenv
 - **Testing**: pytest, pytest-asyncio, httpx
 - **Linting**: ruff, mypy
@@ -30,14 +30,21 @@ FastAPI backend service for document ingestion pipeline; receives file uploads (
 
 `app.main:app` — FastAPI instance served by `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
 
+## CORS Policy
+
+- **Allowed Origins**: `http://localhost:3000`
+- **Allowed Methods**: `["*"]`
+- **Allowed Headers**: `["*"]`
+- **Credentials**: `allow_credentials=True`
+
 ## Data Flow
 
-1. **HTTP Request** → `app/main.py` routes to api/v1/ endpoints
-2. **File Upload** → `app/services/pipeline.py` `process_file()` dispatches by `file_type: Literal["pdf", "xlsx", "md", "txt"]`
-3. **Format-Specific Parsing** → `app/services/parsers/` subdirectory (excel_parser.py, pdf_pipeline.py, markdown_pipeline.py)
-4. **BaseNode Stream** → PDF/Markdown produce LlamaIndex BaseNode lists; Excel yields chunk dicts directly
-5. **Schema Normalization** → `app/services/node_mapper.py` `node_to_chunk_record()` transforms BaseNode to `ChunkRecord` (chunk_type, token_count, embedding, positional metadata)
-6. **Vector Store Insert** → `app/core/supabase.py` `get_service_client()` persists chunks using service role key
+1. **HTTP Request** → `app/main.py` routes to api/v1/documents.py endpoints
+2. **File Upload** → `app/services/ingestion.py` `process_document` sets status="processing"
+3. **Format Dispatch** → `app/services/pipeline.py` `process_file` routes by `file_type` to parsers/excel_parser.py (direct chunk dicts), parsers/pdf_pipeline.py (BaseNode list), parsers/markdown_pipeline.py (BaseNode list)
+4. **Normalization** → `app/services/node_mapper.py` `node_to_chunk_record` transforms BaseNode → chunk table record schema with chunk_type inference, page number extraction, metadata filtering via `_STRIP_KEYS`
+5. **Database Write** → `app/services/ingestion.py` batch-inserts chunks (50 per batch), updates documents.status and metadata
+6. **Status Update** → documents.status="ready" + chunk_count on success; status="error" + error message on failure
 
 ## Behavioral Contracts
 
@@ -59,6 +66,27 @@ tiktoken.encoding_for_model("text-embedding-3-small")
 **Metadata Stripping** (app/services/node_mapper.py):
 ```python
 _STRIP_KEYS = frozenset({"page_label", "source", "file_path", "file_name", "chunk_type", "total_pages"})
+```
+
+**Document Status Transitions** (app/services/ingestion.py):
+- Initial: "pending"
+- During processing: "processing"
+- Success: "ready" with `documents.metadata = {"chunk_count": <int>}`
+- Failure: "error" with `documents.metadata = {"error": "<message>"}`
+
+**Batch Insertion** (app/services/ingestion.py):
+```python
+BATCH_SIZE = 50
+```
+
+**Supported File Extensions** (app/api/v1/documents.py):
+```python
+_SUPPORTED_EXTENSIONS = {".pdf", ".xlsx", ".md", ".txt"}
+```
+
+**Demo User Constant** (app/api/v1/documents.py):
+```python
+DEMO_USER_ID = "00000000-0000-0000-0000-000000000000"
 ```
 
 ## Workflow & Conventions

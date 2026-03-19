@@ -7,13 +7,13 @@ Next.js 16 web application with Supabase authentication, Tailwind CSS v4 styling
 ## Contents
 
 ### [components.json](./components.json)
-Configures shadcn/ui component library integration. Uses `base-nova` style variant, enables React Server Components (`rsc: true`) and TypeScript JSX (`tsx: true`). Defines path aliases (`@/components`, `@/lib/utils`, `@/hooks`) and sets Tailwind integration with `neutral` baseColor, CSS variables enabled, Lucide icon library. Configures component install paths to `components` directory.
+Configures shadcn/ui component library integration. Uses `base-nova` style variant, enables React Server Components (`rsc: true`) and TypeScript JSX (`tsx: true`). Defines path aliases (`@/components`, `@/lib/utils`, `@/components/ui`, `@/lib`, `@/hooks`) and sets Tailwind integration with `neutral` baseColor, CSS variables enabled, Lucide icon library. Configures component install paths to `components` directory.
 
 ### [next.config.ts](./next.config.ts)
 Exports `nextConfig` with rewrites for API proxy. Maps `/api/v1/:path*` to backend service at `BACKEND_URL` env var (defaults `http://localhost:8000/api/v1/:path*`). Enables transparent backend communication without CORS.
 
 ### [package.json](./package.json)
-Defines `@zeee/web` workspace package. Scripts: `dev` (Next.js dev server), `build`, `start`, `lint`, `typecheck`. Dependencies: Next.js 16.1.7 + React 19.1.0, Supabase SSR (`@supabase/ssr`, `@supabase/supabase-js`), Tailwind CSS 4.2.1 + PostCSS, shadcn 4.0.8 + `@base-ui/react` primitives, `class-variance-authority`/`clsx`/`tailwind-merge` for conditional styling, `lucide-react` icons.
+Defines `@zeee/web` workspace package. Scripts: `dev` (Next.js dev server), `build`, `start`, `lint`, `typecheck`. Dependencies: Next.js 16.1.7 + React 19.1.0, Supabase SSR (`@supabase/ssr`, `@supabase/supabase-js`), Tailwind CSS 4.2.1 + PostCSS, shadcn 4.0.8 + `@base-ui/react` primitives, `class-variance-authority`/`clsx`/`tailwind-merge` for conditional styling, `lucide-react` icons, `next-themes` 0.4.6, `sonner` 2.0.7, `tw-animate-css`.
 
 ### [postcss.config.mjs](./postcss.config.mjs)
 PostCSS configuration object registering `@tailwindcss/postcss` plugin for Tailwind CSS v4 processing (plugin-based architecture vs v3 JIT mode).
@@ -24,10 +24,13 @@ TypeScript strict mode config for Next.js. Target ES2017, `moduleResolution: "bu
 ## Subdirectories
 
 ### [app/](./app/)
-Next.js App Router entry point with global CSS custom properties theme system, root layout configuring Geist and Inter fonts, system health dashboard polling `/api/health` endpoint.
+Next.js App Router entry point defining global styles, root layout, system health dashboard, and document management routes. Exports `RootLayout` with Geist/Inter fonts and `<Toaster />` from sonner, `HomePage` client component polling `/api/health`, and `/documents` route segment with async upload, polling, delete, and replace workflows. Health dashboard maps `ServiceStatus` → Badge variants; document polling uses `POLL_INTERVAL_MS = 3000`, `POLL_TIMEOUT_MS = 5 * 60 * 1000`.
+
+### [components/](./components/)
+React component library organized into UI primitives (headless Base UI wrappers with CVA variants) and domain-specific document management components. `documents/` subdirectory provides UploadZone with drag-and-drop validation (ACCEPTED_MIME_TYPES: `application/pdf`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, `text/markdown`, `text/plain`), DocumentCard with StatusBadge/FileIcon, DocumentList grid, ReplaceDialog/DeleteDialog modals. `ui/` subdirectory wraps `@base-ui/react` components: Badge/Button with CVA variants, Card family, Dialog/DropdownMenu with portal rendering, Progress/Separator/Skeleton, Toaster with Next.js theme integration and lucide-react icon overrides.
 
 ### [lib/](./lib/)
-UI utilities — exports `cn()` function merging clsx and tailwind-merge for conflict-free Tailwind class composition.
+Client-side utilities and API interface. Exports `uploadDocument()`, `listDocuments()`, `getDocument()`, `deleteDocument()`, `replaceDocument()`, `formatFileSize()` for document CRUD operations against `/api/v1/documents`; defines `Document` type with `status: "pending" | "processing" | "ready" | "error"` and `DocumentListResponse`. Exports `cn()` function merging clsx and tailwind-merge for conflict-free Tailwind class composition.
 
 ## Stack
 
@@ -35,6 +38,8 @@ UI utilities — exports `cn()` function merging clsx and tailwind-merge for con
 - **Styling**: Tailwind CSS 4.2.1 (PostCSS plugin architecture), shadcn/ui `base-nova` variant
 - **Auth**: Supabase SSR (`@supabase/ssr` 0.6.2, `@supabase/supabase-js` 2.48.1)
 - **UI Primitives**: shadcn 4.0.8, `@base-ui/react` 0.0.33, Lucide React icons
+- **Theming**: `next-themes` 0.4.6
+- **Notifications**: `sonner` 2.0.7
 - **Build Tools**: TypeScript 5.7.3, PostCSS 9.0.2, `@tailwindcss/postcss` 4.2.1
 
 ## Configuration
@@ -48,15 +53,66 @@ UI utilities — exports `cn()` function merging clsx and tailwind-merge for con
 
 - **Routing**: App Router with server components by default (`rsc: true` in components.json)
 - **Styling**: CSS custom properties (`--color-*`, `--radius`) defined in `globals.css`, consumed via Tailwind utilities
-- **State Management**: Client-side React state for health polling dashboard
+- **State Management**: Client-side React state for health polling dashboard and document polling
 - **Backend Communication**: Next.js rewrites proxy API requests to Python FastAPI backend
 
 ## File Relationships
 
 - `postcss.config.mjs` processes `app/globals.css` via Tailwind CSS v4 plugin
 - `components.json` defines import paths consumed by shadcn CLI and TypeScript path resolution
-- `next.config.ts` rewrites enable `app/api/health/route.ts` to query backend health endpoint
-- `tsconfig.json` path alias `@/*` used by `app/layout.tsx` imports (`@/lib/utils`)
+- `next.config.ts` rewrites enable `app/page.tsx` health polling and `app/documents/page.tsx` document operations
+- `tsconfig.json` path alias `@/*` used by `app/layout.tsx` imports (`@/components/ui/sonner`), `app/page.tsx` imports (`@/components/ui/badge`, `@/components/ui/card`), `app/documents/page.tsx` imports (`@/lib/api-client`)
+- `lib/api.ts` calls `/api/v1/documents` endpoints proxied by `next.config.ts` rewrites
+
+## Behavioral Contracts
+
+### Theme System
+- Custom variant `dark` targets `.dark` class descendants via `@custom-variant dark (&:is(.dark *))`
+- Color tokens in HSL (light mode), OKLCH (dark mode)
+- Radius system derives 7 scales from `--radius: 0.625rem` (sm, md, lg, xl, 2xl, 3xl, 4xl)
+
+### Status Mapping
+- `StatusBadge` maps `ServiceStatus` → Badge variant: `'ok'` → green background, `'degraded'` → yellow background, `'unreachable'` → destructive variant
+- Document StatusBadge: `"pending"` → "Queued" (default), `"processing"` → "Indexing..." with Progress, `"ready"` → "Ready" + "{chunkCount} sections indexed", `"error"` → "Failed" (destructive)
+
+### Health Response Schema
+```typescript
+{
+  status: 'healthy' | 'degraded',
+  frontend: 'ok',
+  backend: 'ok' | 'degraded' | 'unreachable',
+  database: 'ok' | 'unreachable',
+  timestamp: string
+}
+```
+
+### Document Polling
+- **Polling interval**: `3000` ms
+- **Polling timeout**: `5 * 60 * 1000` ms
+- **Polled statuses**: `'pending'`, `'processing'`
+- **Terminal statuses**: `'ready'` (success toast), `'error'` (error toast)
+
+### File Type Validation
+ACCEPTED_MIME_TYPES: `application/pdf`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, `text/markdown`, `text/plain`
+HTML input: `.pdf,.xlsx,.md,.txt`
+
+### CVA Variant Enums
+- badgeVariants: `default | secondary | destructive | outline | ghost | link`
+- buttonVariants: variant × size dimensions (`default | outline | secondary | ghost | destructive | link` × `default | xs | sm | lg | icon | icon-xs | icon-sm | icon-lg`)
+
+### Data Attributes
+- `data-slot="<component-name>"` — CSS targeting for all ui/ components
+- `data-size="default" | data-size="sm"` — Card size variant
+- `data-open` / `data-closed` — Dialog/DropdownMenu animation states
+- `data-horizontal` / `data-vertical` — Separator orientation
+- `data-inset` / `data-variant` — DropdownMenu item styling
+
+### Time Formatting
+- <60s: "Just now"
+- <60min: "{n}m ago"
+- <24hr: "{n}h ago"
+- <7d: "{n}d ago"
+- ≥7d: "MMM DD"
 
 ## Workflow & Conventions
 

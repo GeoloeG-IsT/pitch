@@ -2,7 +2,7 @@
 
 # pitch (root)
 
-Turborepo monorepo for zeee-pitch-zooo project — orchestrates Next.js web app (apps/web), FastAPI backend (apps/api), shared TypeScript types (packages/shared-types), and Supabase local development environment.
+Turborepo monorepo for zeee-pitch-zooo project — orchestrates Next.js 16 web app with Supabase SSR authentication, FastAPI backend with LlamaIndex document ingestion, and pnpm workspaces for cross-package linking.
 
 ## Contents
 
@@ -12,29 +12,41 @@ Turborepo monorepo for zeee-pitch-zooo project — orchestrates Next.js web app 
 
 ## Subdirectories
 
-- **[supabase/](./supabase/)**: config.toml defines project_id="zeee-pitch-zooo", service ports (API 54321, DB 54322, Studio 54323), auth settings (jwt_expiry=3600, site_url="http://127.0.0.1:3000"), DB major_version=15, API schemas ["public", "graphql_public"].
-- **[apps/api/](./apps/api/)**: FastAPI backend with Supabase client integration, document ingestion pipeline (Excel, PDF, Markdown parsers), and /api/v1/health endpoint.
-- **[apps/web/](./apps/web/)**: Next.js 15.1.6 app with Tailwind CSS, shadcn/ui components (Button, Card, Badge), `/api/health` route, and Supabase client configuration.
-- **[packages/shared-types/](./packages/shared-types/)**: TypeScript type definitions (`Document`, `Chunk`) shared across web and API workspaces via `workspace:*` dependency protocol.
+- **[apps/](./apps/)**: Contains FastAPI backend (`api/`) serving `/api/v1` endpoints for document upload/ingestion with LlamaIndex parsers (PDF/Excel/Markdown) and Supabase vector store persistence, and Next.js 16 frontend (`web/`) with App Router, SSR authentication, Tailwind CSS v4, shadcn/ui `base-nova` components, document upload UI with drag-and-drop validation, polling-based status tracking (3s interval, 5min timeout), and API proxy rewrites to backend.
 
 ## Stack
 
 - **Monorepo**: Turborepo 2.8.17 + pnpm 10.32.1 workspaces
-- **Frontend**: Next.js 15.1.6 (apps/web), React 19.0.0, Tailwind CSS 3.4.17, shadcn/ui components
-- **Backend**: FastAPI (apps/api), Python 3.12+, Supabase client, document parsers (openpyxl, PyPDF2, markdown)
-- **Database**: Supabase local (PostgreSQL 15, port 54322)
-- **Build**: Turbo task orchestration, shared TypeScript types from packages/shared-types
+- **Frontend**: Next.js 16.1.7 (apps/web), React 19.1.0, Tailwind CSS 4.2.1, shadcn/ui 4.0.8, Supabase SSR 0.6.2
+- **Backend**: FastAPI 0.135.0 (apps/api), Python 3.11+, uvicorn ASGI, LlamaIndex 0.14.18+, Supabase Python SDK
+- **Database**: Supabase vector store with pgvector, OpenAI text-embedding-3-small
+- **Build**: Turbo task orchestration, `uv` package manager for Python backend
 - **Content**: Python-based documentation build (`uv run python build-all.py` in content/)
 
 ## Architecture
 
-Three-layer workspace structure:
+**Request Flow**:
+1. Browser → Next.js frontend (`apps/web/app/documents/`)
+2. Client-side API calls (`apps/web/lib/api.ts`) → `/api/v1/documents`
+3. Next.js rewrites → FastAPI backend (`apps/api/app/api/v1/documents.py`)
+4. Backend delegates to ingestion service (`apps/api/app/services/ingestion.py`)
+5. Format-specific parser → LlamaIndex BaseNode stream
+6. Node mapper normalization → chunk records
+7. Supabase service client batch insert (50 chunks/batch)
+8. Frontend polls document status until terminal state
 
-1. **apps/web**: Next.js frontend consumes shared-types, connects to Supabase API (port 54321) and apps/api backend.
-2. **apps/api**: FastAPI service ingests documents via parsers (Excel, PDF, Markdown), stores chunks/documents in Supabase DB (port 54322), exposes /api/v1/health.
-3. **packages/shared-types**: Single source of truth for `Document` and `Chunk` TypeScript interfaces, linked into both apps via `workspace:*`.
+**CORS Configuration**:
+- Allowed origins: `http://localhost:3000`
+- Credentials: enabled
+- Methods/Headers: wildcard
 
-Turbo enforces topological build order: `^build` ensures shared-types compiles before apps/web and apps/api run their build tasks.
+**API Surface**:
+- `POST /api/v1/documents` — multipart upload, returns `document_id`
+- `GET /api/v1/documents` — list with filter params
+- `GET /api/v1/documents/{id}` — fetch single document
+- `DELETE /api/v1/documents/{id}` — soft/hard delete
+- `PUT /api/v1/documents/{id}/replace` — multipart replace
+- `GET /api/health` — aggregated system status
 
 ## Workflow & Conventions
 
@@ -42,16 +54,57 @@ Turbo enforces topological build order: `^build` ensures shared-types compiles b
 - **Workspace Scripts**: Run from root — `pnpm dev` starts all apps, `pnpm build` compiles entire monorepo, `pnpm lint`/`pnpm typecheck`/`pnpm test` validate codebase.
 - **Database Lifecycle**: `pnpm db:start` initializes Supabase local, `pnpm db:stop` halts services, `pnpm db:reset` wipes and reinitializes DB, `pnpm db:migrate` creates new migration file.
 - **Content Build**: `pnpm content:build` runs Python documentation generator in content/ directory via `uv run python build-all.py`.
-- **Cross-Package Dependencies**: Use `workspace:*` protocol in package.json to reference local packages (e.g., apps/web depends on `@zeee-pitch-zooo/shared-types: "workspace:*"`).
+- **Development**:
+  - Backend: `cd apps/api && pnpm dev` → uvicorn hot reload on port 8000
+  - Frontend: `cd apps/web && pnpm dev` → Next.js dev server on port 3000
+  - Backend proxy: Automatic via `next.config.ts` rewrites
+- **Testing**:
+  - Backend: `cd apps/api && pnpm test` → pytest with fail-fast
+  - Frontend: `cd apps/web && pnpm typecheck` before commits
+- **Dependency Management**:
+  - Backend: `uv` package manager, all scripts prefixed `uv run`
+  - Frontend: npm/pnpm via workspace root
+- **Type Safety**:
+  - Backend: mypy strict mode targeting `app/`
+  - Frontend: TypeScript strict mode, `isolatedModules: true`
+- **Styling Conventions**:
+  - Use Tailwind utilities composed via `cn()` helper
+  - Prefer CSS variables from `globals.css` theme tokens
+  - Component variants via CVA in `components/ui/`
 - **Build Optimization**: Turbo caches `build`, `lint`, `typecheck`, `test` tasks. Disable caching for `dev` tasks to ensure live reload.
 - **Native Dependencies**: Only `supabase` and `sharp` are allowed to build native modules (`pnpm.onlyBuiltDependencies`).
 
 ## Behavioral Contracts
 
-- **Supabase Port Allocation**: API 54321, DB 54322, shadow DB 54320, Studio 54323. Auth site_url="http://127.0.0.1:3000" matches Next.js dev server.
-- **JWT Settings**: jwt_expiry=3600 seconds, enable_refresh_token_rotation=true, refresh_token_reuse_interval=10 seconds.
-- **Schema Exposure**: Supabase API serves schemas ["public", "graphql_public"], max_rows=1000 query cap.
-- **Signup Control**: enable_signup=true, enable_confirmations=false, double_confirm_changes=true.
-- **Workspace Patterns**: pnpm resolves `apps/*` and `packages/*` as workspace roots.
-- **Turbo Task Dependencies**: `lint`, `typecheck`, `test` wait for `^build` to complete before running.
-- **Persistent Dev Tasks**: `dev` tasks run with `persistent: true`, no caching (`cache: false`).
+**Document Status Lifecycle**:
+- `"pending"` — Initial upload state
+- `"processing"` — Ingestion in progress
+- `"ready"` — Successfully indexed with `metadata.chunk_count`
+- `"error"` — Failed with `metadata.error` message
+
+**Supported MIME Types**:
+- `application/pdf`
+- `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- `text/markdown`
+- `text/plain`
+
+**Polling Parameters**:
+- Interval: `3000` ms
+- Timeout: `300000` ms (5 minutes)
+- Polled statuses: `["pending", "processing"]`
+
+**Chunk Classification**:
+```python
+chunk_type: Literal["text", "table", "heading", "image_caption"]
+```
+
+**Demo User Constant**:
+```python
+DEMO_USER_ID = "00000000-0000-0000-0000-000000000000"
+```
+
+**Workspace Patterns**: pnpm resolves `apps/*` and `packages/*` as workspace roots.
+
+**Turbo Task Dependencies**: `lint`, `typecheck`, `test` wait for `^build` to complete before running.
+
+**Persistent Dev Tasks**: `dev` tasks run with `persistent: true`, no caching (`cache: false`).

@@ -2,15 +2,29 @@
 
 # lib
 
-UI utility functions for Next.js application — currently contains cn() for Tailwind CSS class composition.
+Client-side utilities and API interface for Next.js application — document management operations and Tailwind CSS class composition.
 
 ## Contents
 
-- **[utils.ts](./utils.ts)** — exports cn() variadic function combining clsx and twMerge for conflict-free Tailwind class merging
+- **[api.ts](./api.ts)** — exports `uploadDocument()`, `listDocuments()`, `getDocument()`, `deleteDocument()`, `replaceDocument()`, `formatFileSize()` for document CRUD operations against `/api/v1/documents`; defines `Document` type with `status: "pending" | "processing" | "ready" | "error"` and `DocumentListResponse` wrapper
+- **[utils.ts](./utils.ts)** — exports `cn()` variadic function combining clsx and twMerge for conflict-free Tailwind class merging
 
 ## API Surface
 
-Single export: `cn(...inputs: ClassValue[])` accepts clsx-compatible inputs (strings, objects, arrays) and returns deduplicated Tailwind classes with specificity conflict resolution via tailwind-merge.
+**Document Management:**
+- `uploadDocument(file: File, title?: string): Promise<Document>` — POST multipart FormData
+- `listDocuments(): Promise<DocumentListResponse>` — GET all documents
+- `getDocument(id: string): Promise<Document>` — GET single document by ID
+- `deleteDocument(id: string): Promise<void>` — DELETE document
+- `replaceDocument(id: string, file: File): Promise<Document>` — PUT new file to existing document ID
+- `formatFileSize(bytes: number | null): string` — returns KB/MB formatted string
+
+**UI Utilities:**
+- `cn(...inputs: ClassValue[])` — accepts clsx-compatible inputs (strings, objects, arrays), returns deduplicated Tailwind classes with specificity conflict resolution
+
+## Error Handling
+
+All fetch operations throw `Error` with descriptive messages: `"Upload failed: {statusText}"`, `"Failed to load documents"`, `"Document not found"`, `"Delete failed"`, `"Replace failed"`.
 
 ## Dependencies
 

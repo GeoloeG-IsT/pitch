@@ -6,15 +6,17 @@ FastAPI application root defining the API server instance, CORS policy, and rout
 
 ## Contents
 
-**[main.py](./main.py)** — `app: FastAPI` instance titled "Zeee Pitch Zooo API" v0.1.0; configures `CORSMiddleware` allowing localhost:3000 origin with credentials; mounts `health_router` from api/v1/health.py at `/api/v1` prefix.
+**[main.py](./main.py)** — `app: FastAPI` instance titled "Zeee Pitch Zooo API" v0.1.0; configures `CORSMiddleware` allowing localhost:3000 origin with credentials; mounts `health_router` and `documents_router` from api/v1/ at `/api/v1` prefix; sets `OPENAI_API_KEY` in `os.environ` from `settings.openai_api_key` for LlamaIndex compatibility.
 
 ## Subdirectories
+
+**[api/](./api/)** — Versioned HTTP API surfaces providing `/health` endpoint (service metadata + database connectivity) and `/documents` resource handlers (POST, GET, GET /{id}, DELETE /{id}, PUT /{id}) with `DEMO_USER_ID` hardcoded constant and replace-on-duplicate upload logic.
 
 **[core/](./core/)** — Environment configuration (`Settings` from config.py) and Supabase service client factory (`get_service_client()` from supabase.py) using service role key for privileged database access.
 
 **[models/](./models/)** — Pydantic schemas: `ChunkRecord` (vector database record with embedding, chunk_type, positional metadata), `DocumentCreate` (upload request), `DocumentResponse`/`DocumentListResponse` (API serialization).
 
-**[services/](./services/)** — Document ingestion orchestration: `process_file` in pipeline.py routes to format-specific parsers (parsers/excel_parser.py, parsers/pdf_pipeline.py, parsers/markdown_pipeline.py), `node_to_chunk_record` in node_mapper.py transforms LlamaIndex BaseNode objects into database chunk dicts.
+**[services/](./services/)** — Document ingestion orchestration: `process_document` transitions document status (pending → processing → ready/error) with batch chunk insertion (50 per batch); `pipeline.process_file` routes to format-specific parsers; `node_mapper.node_to_chunk_record` transforms LlamaIndex BaseNode objects into database chunk dicts with chunk_type inference and token counting.
 
 ## Stack
 
@@ -22,7 +24,7 @@ FastAPI application root defining the API server instance, CORS policy, and rout
 - **Middleware**: `fastapi.middleware.cors.CORSMiddleware`
 - **Database Client**: Supabase Python SDK (service role authentication)
 - **Validation**: Pydantic BaseModel, BaseSettings
-- **Routing**: APIRouter mount pattern (api/v1/health.py → `/api/v1`)
+- **Routing**: APIRouter mount pattern (api/v1/health.py, api/v1/documents.py → `/api/v1`)
 
 ## CORS Policy
 
@@ -53,17 +55,41 @@ tiktoken.encoding_for_model("text-embedding-3-small")
 _STRIP_KEYS = frozenset({"page_label", "source", "file_path", "file_name", "chunk_type", "total_pages"})
 ```
 
+**Document Status Transitions** (services/ingestion.py):
+- Initial: "pending"
+- During processing: "processing"
+- Success: "ready" with `documents.metadata = {"chunk_count": <int>}`
+- Failure: "error" with `documents.metadata = {"error": "<message>"}`
+
+**Batch Insertion** (services/ingestion.py):
+```python
+BATCH_SIZE = 50
+```
+
+**Supported File Extensions** (api/v1/documents.py):
+```python
+_SUPPORTED_EXTENSIONS = {".pdf", ".xlsx", ".md", ".txt"}
+```
+
+**Demo User Constant** (api/v1/documents.py):
+```python
+DEMO_USER_ID = "00000000-0000-0000-0000-000000000000"
+```
+
 ## Data Flow
 
-1. **API Request** → main.py routes to api/v1/ endpoints
-2. **File Upload** → services/pipeline.py dispatches by file_type to parsers/
-3. **Parsing** → Excel: direct chunk dicts; PDF/Markdown: LlamaIndex BaseNode lists
-4. **Normalization** → services/node_mapper.py transforms BaseNode → ChunkRecord schema
-5. **Database Write** → core/supabase.py `get_service_client()` inserts chunks using service role key
+1. **API Request** → main.py routes to api/v1/documents.py endpoints
+2. **File Upload** → services/ingestion.py calls `process_document`, sets status="processing"
+3. **Format Dispatch** → services/pipeline.py routes by file_type to parsers/excel_parser.py (direct chunk dicts), parsers/pdf_pipeline.py (BaseNode list), parsers/markdown_pipeline.py (BaseNode list)
+4. **Normalization** → services/node_mapper.py transforms BaseNode → chunk table record schema with chunk_type inference, page number extraction, metadata filtering
+5. **Database Write** → services/ingestion.py batch-inserts chunks (50 per batch), updates documents.status and metadata
+6. **Status Update** → documents.status="ready" + chunk_count on success; status="error" + error message on failure
 
 ## File Relationships
 
-- **main.py** imports `health_router` from api/v1/health.py
-- **services/pipeline.py** imports parsers from services/parsers/ subdirectory
-- **services/node_mapper.py** consumes LlamaIndex BaseNode objects, outputs models/chunk.py-compatible dicts
+- **main.py** imports `health_router`, `documents_router` from api/v1/
+- **api/v1/documents.py** imports `process_document`, `delete_document_chunks` from services/ingestion.py, `DocumentResponse`, `DocumentListResponse` from models/document.py, `get_service_client` from core/supabase.py
+- **services/ingestion.py** imports `process_file` from services/pipeline.py
+- **services/pipeline.py** imports parsers from services/parsers/, `node_to_chunk_record` from services/node_mapper.py
+- **services/node_mapper.py** consumes LlamaIndex BaseNode objects, outputs chunk table-compatible dicts
 - **core/supabase.py** uses `settings` from core/config.py for client initialization

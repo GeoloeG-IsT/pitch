@@ -2,28 +2,44 @@
 
 # services
 
-Orchestrates document ingestion by routing uploaded files to format-specific parsers and mapping parsed nodes to database chunk records.
+Orchestrates document ingestion by routing uploaded files to format-specific parsers, mapping parsed nodes to database chunk records, and managing document lifecycle from upload to ready/error states.
 
 ## Contents
 
-**[pipeline.py](./pipeline.py)** — `process_file(file_bytes, file_type, document_id)` dispatches to parsers/excel_parser.py (xlsx), parsers/pdf_pipeline.py (pdf), parsers/markdown_pipeline.py (md/txt); returns chunk dicts ready for database insertion.
+**[ingestion.py](./ingestion.py)** — `process_document(doc_id, file_bytes, file_type)` transitions document status (pending → processing → ready/error), delegates to `pipeline.process_file`, batch-inserts chunks (50 per batch) into Supabase, updates documents.metadata with chunk_count or error message; `delete_document_chunks(doc_id)` removes all chunks for a document.
+
+**[pipeline.py](./pipeline.py)** — `process_file(file_bytes, file_type, document_id)` dispatches to parsers/excel_parser.py (xlsx), parsers/pdf_pipeline.py (pdf), parsers/markdown_pipeline.py (md/txt); returns chunk dicts ready for database insertion; raises ValueError on unsupported file_type.
 
 **[node_mapper.py](./node_mapper.py)** — `node_to_chunk_record(node, document_id)` transforms LlamaIndex BaseNode into chunk table record with document_id, content, embedding, section_number, page_number, chunk_type, metadata, token_count fields.
 
 ## Data Flow
 
-1. **File Upload** → `pipeline.process_file` receives file_bytes, file_type, document_id
-2. **Format Dispatch** → routes to parsers/excel_parser.py (direct chunk dicts), parsers/pdf_pipeline.py (BaseNode list), or parsers/markdown_pipeline.py (BaseNode list)
+1. **File Upload** → `ingestion.process_document` receives doc_id, file_bytes, file_type; sets status="processing" in documents table
+2. **Format Dispatch** → `pipeline.process_file` routes to parsers/excel_parser.py (direct chunk dicts), parsers/pdf_pipeline.py (BaseNode list), or parsers/markdown_pipeline.py (BaseNode list)
 3. **Node Transformation** → PDF/Markdown results pass through `node_to_chunk_record` to normalize BaseNode metadata into database schema
-4. **Chunk Records** → returns list[dict] with keys matching models/chunk.py schema
+4. **Batch Insertion** → ingestion.py inserts chunks in batches of 50 via Supabase client
+5. **Status Update** → documents.status="ready", metadata={"chunk_count": N} on success; status="error", metadata={"error": "..."} on failure
 
 ## File Relationships
 
+- **ingestion.py** imports `process_file` from pipeline.py, `get_service_client` from app.core.supabase
 - **pipeline.py** imports `parse_excel` from parsers/excel_parser.py, `run_pdf_pipeline` from parsers/pdf_pipeline.py, `run_markdown_pipeline` from parsers/markdown_pipeline.py, `node_to_chunk_record` from node_mapper.py
 - **node_mapper.py** consumes LlamaIndex BaseNode objects produced by parsers/pdf_pipeline.py and parsers/markdown_pipeline.py
 - Excel workflow bypasses node_mapper.py — parsers/excel_parser.py emits database-ready dicts directly
 
 ## Behavioral Contracts
+
+**Document Status Transitions** (ingestion.py):
+- Initial: "pending"
+- During processing: "processing"
+- Success: "ready" with `documents.metadata = {"chunk_count": <int>}`
+- Failure: "error" with `documents.metadata = {"error": "<message>"}`
+
+**Batch Insertion** (ingestion.py):
+```python
+BATCH_SIZE = 50
+```
+Chunks inserted in batches of 50 to Supabase chunks table.
 
 **Chunk Type Inference** (node_mapper.py):
 - `chunk_type="heading"` if node metadata contains header_path or heading keys

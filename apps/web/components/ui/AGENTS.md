@@ -9,24 +9,37 @@ Headless UI component library implementing Base UI primitives with CVA variant m
 - **[badge.tsx](./badge.tsx)** — `Badge` component with six variants (`default`, `secondary`, `destructive`, `outline`, `ghost`, `link`), `badgeVariants` CVA config, polymorphic `span` element with `useRender`
 - **[button.tsx](./button.tsx)** — `Button` component wrapping `ButtonPrimitive` from `@base-ui/react/button`, `buttonVariants` CVA with six variant styles and five size options (`default`, `xs`, `sm`, `lg`, `icon` sizes)
 - **[card.tsx](./card.tsx)** — seven composable components (`Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter`), CSS grid-based layout with container queries, two size variants (`default`, `sm`)
+- **[dialog.tsx](./dialog.tsx)** — ten components wrapping `@base-ui/react/dialog` primitives (`Dialog`, `DialogTrigger`, `DialogPortal`, `DialogClose`, `DialogOverlay`, `DialogContent`, `DialogHeader`, `DialogFooter`, `DialogTitle`, `DialogDescription`), modal with backdrop blur, zoom/fade animations, optional close button via `showCloseButton` prop
+- **[dropdown-menu.tsx](./dropdown-menu.tsx)** — fifteen components wrapping `@base-ui/react/menu` primitives (`DropdownMenu`, `DropdownMenuPortal`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuGroup`, `DropdownMenuLabel`, `DropdownMenuItem`, `DropdownMenuSub`, `DropdownMenuSubTrigger`, `DropdownMenuSubContent`, `DropdownMenuCheckboxItem`, `DropdownMenuRadioGroup`, `DropdownMenuRadioItem`, `DropdownMenuSeparator`, `DropdownMenuShortcut`), positioned popups with `--available-height`, `--anchor-width`, `--transform-origin` CSS vars, slide-in/out animations, destructive variant for `DropdownMenuItem`
+- **[progress.tsx](./progress.tsx)** — five composable components (`Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`) wrapping `@base-ui/react/progress`, animated fill bar with tabular-nums value display
+- **[separator.tsx](./separator.tsx)** — `Separator` component wrapping `@base-ui/react/separator`, orientation-aware styling via `data-horizontal`/`data-vertical` attributes
+- **[skeleton.tsx](./skeleton.tsx)** — `Skeleton` component for loading states, `animate-pulse` animation, muted background
+- **[sonner.tsx](./sonner.tsx)** — `Toaster` component wrapping `sonner` toast library, Next.js theme integration via `useTheme`, lucide-react icon overrides (`CircleCheckIcon`, `InfoIcon`, `TriangleAlertIcon`, `OctagonXIcon`, `Loader2Icon`), CSS custom properties for design system tokens
 
 ## Architecture
 
-All components follow headless UI composition pattern: accept `className` prop, merge classes via `cn()` from `@/lib/utils`, apply `data-slot` attributes for CSS selector targeting. `Badge` and `Button` use CVA for variant-based class generation. `Card` family uses container queries (`@container/card-header`) for responsive grid layouts.
+All components follow headless UI composition pattern: accept `className` prop, merge classes via `cn()` from `@/lib/utils`, apply `data-slot` attributes for CSS selector targeting. `Badge` and `Button` use CVA for variant-based class generation. `Card` family uses container queries (`@container/card-header`) for responsive grid layouts. `Dialog` and `DropdownMenu` families use Base UI state attributes (`data-open`, `data-closed`, `data-disabled`, `data-[side]`) for animation and styling.
 
 ## Patterns
 
 - **CVA Variant Management**: `badgeVariants` and `buttonVariants` accept `VariantProps<typeof X>` for type-safe style selection
 - **Polymorphic Rendering**: `Badge` uses `useRender` with `defaultTagName: "span"`, accepts `render` prop for custom element types
-- **Data Slot Pattern**: all components expose `data-slot` attributes matching component name (`data-slot="badge"`, `data-slot="button"`, `data-slot="card"`)
-- **Composition via Props**: `Card` components accept `size?: "default" | "sm"` prop, child components inherit sizing via CSS selectors (`has-[data-size=sm]:text-sm`)
+- **Data Slot Pattern**: all components expose `data-slot` attributes matching component name (`data-slot="badge"`, `data-slot="button"`, `data-slot="card"`, `data-slot="dialog"`, `data-slot="dropdown-menu"`, `data-slot="progress"`, `data-slot="separator"`, `data-slot="skeleton"`)
+- **Composition via Props**: `Card` components accept `size?: "default" | "sm"` prop, child components inherit sizing via CSS selectors (`has-[data-size=sm]:text-sm`); `DialogContent` and `DialogFooter` accept `showCloseButton?: boolean` for conditional close button rendering; `DropdownMenuItem` accepts `inset?: boolean` and `variant?: "default" | "destructive"` props
 - **Container Queries**: `CardHeader` uses `@container/card-header` to auto-switch to 2-column grid when `CardAction` present
+- **Portal-based Overlays**: `DialogPortal`, `DropdownMenuPortal` render into document root, `DialogOverlay` applies fixed z-50 backdrop with blur, `DropdownMenuContent` uses z-50 isolation layer
+- **CSS Custom Properties**: `DropdownMenuContent` uses `--available-height`, `--anchor-width`, `--transform-origin` for positioning/sizing; `Toaster` maps `--normal-bg`, `--normal-text`, `--normal-border`, `--border-radius` to `--popover`, `--popover-foreground`, `--border`, `--radius` tokens
+- **Theme Integration**: `Toaster` reads theme from `useTheme()` hook, passes to `sonner/Toaster` theme prop
+- **Animation via Data Attributes**: `DialogOverlay`, `DialogContent`, `DropdownMenuContent` use `data-open`/`data-closed` states with Tailwind `animate-in`/`animate-out` utilities, `DropdownMenuContent` uses `data-[side]` for directional slide animations
 
 ## Dependencies
 
-- `@base-ui/react` — `merge-props`, `use-render` composition utilities, `ButtonPrimitive` headless button
+- `@base-ui/react` — `merge-props`, `use-render` composition utilities, `ButtonPrimitive` headless button, `DialogPrimitive` modal primitives, `MenuPrimitive` dropdown/context menu primitives, `ProgressPrimitive` progress bar primitives, `SeparatorPrimitive` divider primitive
 - `class-variance-authority` — `cva` function for variant class generation, `VariantProps` type utility
 - `@/lib/utils` — `cn` Tailwind class merger
+- `lucide-react` — `XIcon` for dialog close button, `ChevronRightIcon` for submenu triggers, `CheckIcon` for checkbox/radio indicators, `CircleCheckIcon`, `InfoIcon`, `TriangleAlertIcon`, `OctagonXIcon`, `Loader2Icon` for toast notifications
+- `sonner` — `Toaster` base toast component, `ToasterProps` type
+- `next-themes` — `useTheme` hook for theme detection
 
 ## Behavioral Contracts
 
@@ -47,7 +60,19 @@ All components follow headless UI composition pattern: accept `className` prop, 
 - `data-slot="badge"` — Badge component
 - `data-slot="button"` — Button component
 - `data-slot="card"` / `data-slot="card-header"` / `data-slot="card-title"` / `data-slot="card-description"` / `data-slot="card-action"` / `data-slot="card-content"` / `data-slot="card-footer"` — Card family
+- `data-slot="dialog"` / `data-slot="dialog-trigger"` / `data-slot="dialog-portal"` / `data-slot="dialog-close"` — Dialog family
+- `data-slot="dropdown-menu"` / `data-slot="dropdown-menu-portal"` / `data-slot="dropdown-menu-trigger"` / `data-slot="dropdown-menu-group"` / `data-slot="dropdown-menu-sub"` / `data-slot="dropdown-menu-radio-group"` — DropdownMenu family
+- `data-slot="progress"` / `data-slot="progress-track"` / `data-slot="progress-indicator"` / `data-slot="progress-label"` / `data-slot="progress-value"` — Progress family
+- `data-slot="separator"` — Separator component
+- `data-slot="skeleton"` — Skeleton component
 - `data-size="default" | data-size="sm"` — Card size variant (propagates to children via CSS selectors)
+- `data-horizontal` / `data-vertical` — Separator orientation
+- `data-open` / `data-closed` — Dialog and DropdownMenu animation states
+- `data-disabled` — DropdownMenuItem disabled state
+- `data-inset` — DropdownMenuLabel/DropdownMenuItem/DropdownMenuCheckboxItem/DropdownMenuRadioItem inset variant
+- `data-variant="default" | data-variant="destructive"` — DropdownMenuItem variant
+- `data-popup-open` — DropdownMenuSubTrigger submenu active state
+- `data-[side]` — DropdownMenuContent directional animation state
 
 ### CSS Grid Layout
 
@@ -55,3 +80,36 @@ All components follow headless UI composition pattern: accept `className` prop, 
 - Base: `@container/card-header`
 - Grid columns: `has-data-[slot=card-action]:grid-cols-[1fr_auto]`
 - CardAction placement: `col-start-2 row-span-2 row-start-1`
+
+### Dialog Positioning
+
+**DialogContent defaults:**
+- side: `bottom` (implied center positioning via fixed centering classes)
+- showCloseButton: `true` (renders XIcon close button in top-right)
+
+**DialogFooter defaults:**
+- showCloseButton: `false` (renders "Cancel" button when true)
+
+### DropdownMenu Positioning
+
+**DropdownMenuContent defaults:**
+- align: `"start"`
+- alignOffset: `0`
+- side: `"bottom"`
+- sideOffset: `4`
+
+**DropdownMenuSubContent defaults:**
+- align: `"start"`
+- alignOffset: `-3`
+- side: `"right"`
+- sideOffset: `0`
+
+### Toaster Styling
+
+**CSS Custom Properties:**
+- `--normal-bg` → `--popover`
+- `--normal-text` → `--popover-foreground`
+- `--normal-border` → `--border`
+- `--border-radius` → `--radius`
+
+**Toast className:** `"cn-toast"`

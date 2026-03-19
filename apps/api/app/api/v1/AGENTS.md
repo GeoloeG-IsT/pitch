@@ -8,6 +8,7 @@ The v1 directory contains FastAPI route handlers for the first versioned API sur
 
 ### API Endpoints
 - **[health.py](./health.py)** — `router: APIRouter` exposing `GET /health` endpoint via `health_check()`, returning service metadata and database connectivity status
+- **[documents.py](./documents.py)** — `router: APIRouter` (tag "documents") exporting endpoints for upload, list, get, delete, and re-upload; uses `DEMO_USER_ID` hardcoded constant pending Phase 6 authentication; implements replace-on-duplicate upload logic via filename+user_id query
 
 ## Stack
 
@@ -21,9 +22,16 @@ FastAPI router module mounted under `/api/v1` path prefix in `apps/api/app/main.
 - **Response Schema:** `{"status": "ok", "service": "zeee-pitch-zooo-api", "version": "0.1.0", "database": "ok" | "unreachable"}`
 - **Database Check:** executes `supabase.table("users").select("*", count="exact").limit(0).execute()` to verify connectivity
 
+**Document Management Endpoints:**
+- **POST /documents (201)** — `upload_document(background_tasks, file: UploadFile, title: str | None)` reads file bytes synchronously, queries existing document by `user_id` + `file_name`, updates row and deletes chunks via `delete_document_chunks` if found (else inserts new), queues `process_document(doc_id, file_bytes, file_type)` in background
+- **GET /documents** — `list_documents()` fetches all documents ordered by `created_at DESC`, queries chunk count per document from `chunks` table, returns `DocumentListResponse`
+- **GET /documents/{doc_id}** — `get_document(doc_id)` fetches single document via `.single()`, queries chunk count, raises 404 on exception
+- **DELETE /documents/{doc_id} (204)** — `delete_document(doc_id)` verifies existence, deletes row (FK CASCADE handles chunks)
+- **PUT /documents/{doc_id}** — `reupload_document(doc_id, background_tasks, file)` verifies document exists, validates file type via `_detect_file_type`, reads bytes, calls `delete_document_chunks`, updates `status="pending"` and file metadata, queues `process_document`
+
 ## Integration Points
 
-Routes access configuration via `app.core.config.settings` (provides `supabase_url`, `supabase_key`) and instantiate Supabase clients inline per request; no shared connection pooling at router level
+Routes access configuration via `app.core.config.settings` (provides `supabase_url`, `supabase_key`) and instantiate Supabase clients inline per request; no shared connection pooling at router level. Document endpoints import `get_service_client` from `app.core.supabase`, `DocumentResponse` and `DocumentListResponse` from `app.models.document`, and `process_document` and `delete_document_chunks` from `app.services.ingestion`.
 
 ## Behavioral Contracts
 
@@ -38,3 +46,12 @@ Routes access configuration via `app.core.config.settings` (provides `supabase_u
 - On exception → `"database": "unreachable"`
 - Table target: `users`
 - Query mode: `count="exact"`, `limit(0)` (schema verification without data retrieval)
+
+**Document Upload Constraints:**
+```python
+_SUPPORTED_EXTENSIONS = {".pdf", ".xlsx", ".md", ".txt"}  # mapped to type strings
+DEMO_USER_ID = "00000000-0000-0000-0000-000000000000"
+```
+- File type validation error format: `f"Unsupported file type: {ext!r}. Supported: {', '.join(sorted(_SUPPORTED_EXTENSIONS))}"`
+- Replace-on-duplicate: `upload_document` queries existing document by `(user_id, file_name)`, updates row and deletes chunks if match found
+- All endpoints filter by `DEMO_USER_ID` (TODO: replace with authenticated user in Phase 6)
