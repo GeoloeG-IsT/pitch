@@ -98,12 +98,11 @@ export default function DocumentsPage() {
   }, []);
 
   // Upload handler
-  const handleUpload = useCallback(async (files: File[]) => {
+  const handleUpload = useCallback(async (files: File[], purpose: "pitch" | "rag" = "pitch") => {
     for (const file of files) {
       try {
-        const doc = await uploadDocument(file);
+        const doc = await uploadDocument(file, undefined, purpose);
         setDocuments((prev) => {
-          // If the API replaced an existing document (same ID), update in place
           const exists = prev.some((d) => d.id === doc.id);
           if (exists) return prev.map((d) => (d.id === doc.id ? doc : d));
           return [doc, ...prev];
@@ -117,6 +116,9 @@ export default function DocumentsPage() {
       }
     }
   }, []);
+
+  const handleUploadPitch = useCallback((files: File[]) => handleUpload(files, "pitch"), [handleUpload]);
+  const handleUploadRag = useCallback((files: File[]) => handleUpload(files, "rag"), [handleUpload]);
 
   // Delete handlers
   const handleDeleteRequest = useCallback(
@@ -197,8 +199,23 @@ export default function DocumentsPage() {
       <div className="max-w-3xl mx-auto pt-16 pb-16 px-4">
         <h1 className="text-[28px] font-semibold leading-[1.2] text-primary">Documents</h1>
 
-        <div className="mt-8">
-          <UploadZone onUpload={handleUpload} />
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <h2 className="text-sm font-medium text-muted-foreground mb-2">Pitch Documents</h2>
+            <UploadZone
+              onUpload={handleUploadPitch}
+              label="Drop pitch files here"
+              description="Shown in the investor pitch viewer"
+            />
+          </div>
+          <div>
+            <h2 className="text-sm font-medium text-muted-foreground mb-2">Annex Documents</h2>
+            <UploadZone
+              onUpload={handleUploadRag}
+              label="Drop annex files here"
+              description="Used for Q&A context only (not shown in viewer)"
+            />
+          </div>
         </div>
 
         <h2 className="text-xl font-semibold mt-8">Your Documents</h2>

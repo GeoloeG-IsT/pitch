@@ -7,6 +7,8 @@ import { Upload } from 'lucide-react';
 interface UploadZoneProps {
   onUpload: (files: File[]) => void;
   disabled?: boolean;
+  label?: string;
+  description?: string;
 }
 
 const ACCEPTED_TYPES = '.pdf,.xlsx,.md,.txt';
@@ -17,7 +19,7 @@ const ACCEPTED_MIME_TYPES = [
   'text/plain',
 ];
 
-export function UploadZone({ onUpload, disabled }: UploadZoneProps) {
+export function UploadZone({ onUpload, disabled, label = "Drag files here or click to browse", description = "Supports PDF, Excel (.xlsx), and Markdown files" }: UploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -79,9 +81,9 @@ export function UploadZone({ onUpload, disabled }: UploadZoneProps) {
     >
       <div className="flex flex-col items-center gap-2 py-6 px-4">
         <Upload className="h-8 w-8 text-muted-foreground" />
-        <p className="text-base font-medium">Drag files here or click to browse</p>
+        <p className="text-base font-medium">{label}</p>
         <p className="text-sm text-muted-foreground">
-          Supports PDF, Excel (.xlsx), and Markdown files
+          {description}
         </p>
       </div>
       <input
