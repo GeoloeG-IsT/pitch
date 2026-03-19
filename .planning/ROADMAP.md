@@ -96,11 +96,12 @@ Plans:
   2. Low-confidence answers are automatically queued and hidden from investors until the founder reviews them
   3. Founder can view queued answers in a validation dashboard and approve, edit, or reject each one
   4. High-confidence answers auto-publish without founder intervention, enabling async investor exploration
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md -- Backend confidence scoring, answer routing, review API, notification WebSocket
+- [ ] 05-02-PLAN.md -- Investor-facing confidence badges, verification placeholders, notification stream hook
+- [ ] 05-03-PLAN.md -- Founder validation dashboard with review queue, inline editing, rejection flow
 
 ### Phase 6: Auth + Access Control
 **Goal**: Users have secure accounts with role-based permissions, and founders control investor access through shareable links they can revoke
@@ -157,7 +158,7 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | 2. Document Ingestion | 3/3 | Complete   | 2026-03-19 |
 | 3. RAG Query Engine | 2/2 | Complete   | 2026-03-19 |
 | 4. Smart Document Viewer | 3/3 | Complete   | 2026-03-19 |
-| 5. Trust + HITL Validation | 0/0 | Not started | - |
+| 5. Trust + HITL Validation | 0/3 | Not started | - |
 | 6. Auth + Access Control | 0/0 | Not started | - |
 | 7. Analytics | 0/0 | Not started | - |
 | 8. Live Pitch Mode | 0/0 | Not started | - |
