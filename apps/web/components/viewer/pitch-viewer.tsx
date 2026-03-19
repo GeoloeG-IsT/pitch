@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TOCSidebar } from "./toc-sidebar";
 import { DocumentGroup } from "./document-group";
-import { FABButton } from "@/components/viewer/fab-button";
+import { FloatingInput } from "@/components/viewer/fab-button";
 import { QAPanel } from "@/components/qa/qa-panel";
 import { useActiveSection } from "@/hooks/use-active-section";
 
@@ -20,6 +20,7 @@ export function PitchViewer() {
   const { activeId, handleInView } = useActiveSection();
   const [tocOpen, setTocOpen] = useState(false);
   const [qaOpen, setQaOpen] = useState(false);
+  const [initialQuestion, setInitialQuestion] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPitch()
@@ -161,9 +162,13 @@ export function PitchViewer() {
         </main>
       </div>
 
-      <FABButton
-        onClick={() => setQaOpen(true)}
+      <FloatingInput
+        onSubmit={(question) => {
+          setInitialQuestion(question);
+          setQaOpen(true);
+        }}
         visible={!qaOpen && data.documents.length > 0}
+        sectionName={activeSectionName}
       />
 
       <QAPanel
@@ -172,6 +177,8 @@ export function PitchViewer() {
         sectionName={activeSectionName}
         sectionId={activeId}
         onScrollToSection={scrollToSection}
+        initialQuestion={initialQuestion}
+        onInitialQuestionConsumed={() => setInitialQuestion(null)}
       />
     </div>
   );

@@ -1,44 +1,76 @@
 "use client";
 
-import { MessageSquare } from "lucide-react";
+import { type FormEvent, type KeyboardEvent, useCallback, useRef, useState } from "react";
+import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
 
-interface FABButtonProps {
-  onClick: () => void;
+interface FloatingInputProps {
+  onSubmit: (question: string) => void;
   visible: boolean;
+  sectionName: string | null;
   className?: string;
 }
 
-export function FABButton({ onClick, visible, className }: FABButtonProps) {
+export function FloatingInput({ onSubmit, visible, sectionName, className }: FloatingInputProps) {
+  const [value, setValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const placeholder = sectionName
+    ? `Ask about ${sectionName}...`
+    : "Ask anything about this pitch...";
+
+  const handleSubmit = useCallback(
+    (e?: FormEvent) => {
+      e?.preventDefault();
+      const trimmed = value.trim();
+      if (!trimmed) return;
+      onSubmit(trimmed);
+      setValue("");
+    },
+    [value, onSubmit]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit();
+      }
+    },
+    [handleSubmit]
+  );
+
   if (!visible) return null;
 
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            size="icon"
-            className={cn(
-              "fixed z-50 h-14 w-14 rounded-full shadow-lg",
-              "bottom-4 right-4",
-              "max-md:bottom-4 max-md:left-1/2 max-md:-translate-x-1/2 max-md:right-auto",
-              "transition-transform duration-150",
-              className
-            )}
-            onClick={onClick}
-            aria-label="Ask a question"
-          />
-        }
+    <form
+      onSubmit={handleSubmit}
+      className={cn(
+        "fixed bottom-6 left-1/2 -translate-x-1/2 z-50",
+        "w-[min(560px,calc(100%-2rem))]",
+        "flex items-center gap-2 rounded-full bg-card border shadow-lg px-4 py-2",
+        className
+      )}
+    >
+      <Input
+        ref={inputRef}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        className="flex-1 border-0 shadow-none focus-visible:ring-0 bg-transparent"
+      />
+      <Button
+        type="submit"
+        size="icon-sm"
+        variant="ghost"
+        disabled={!value.trim()}
+        aria-label="Send question"
       >
-        <MessageSquare className="h-6 w-6" />
-      </TooltipTrigger>
-      <TooltipContent side="left">Ask a question</TooltipContent>
-    </Tooltip>
+        <Send className="h-4 w-4" />
+      </Button>
+    </form>
   );
 }

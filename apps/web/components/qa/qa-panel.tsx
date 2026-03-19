@@ -15,6 +15,8 @@ interface QAPanelProps {
   sectionName: string | null;
   sectionId: string | null;
   onScrollToSection: (sectionId: string) => void;
+  initialQuestion?: string | null;
+  onInitialQuestionConsumed?: () => void;
 }
 
 export function QAPanel({
@@ -23,6 +25,8 @@ export function QAPanel({
   sectionName,
   sectionId,
   onScrollToSection,
+  initialQuestion,
+  onInitialQuestionConsumed,
 }: QAPanelProps) {
   const [messages, setMessages] = useState<QAMessage[]>([]);
   const [sectionScope, setSectionScope] = useState<string | null>(null);
@@ -48,6 +52,28 @@ export function QAPanel({
       setSectionScope(sectionName);
     }
   }, [open, sectionName]);
+
+  // Auto-submit initial question from floating input
+  useEffect(() => {
+    if (open && initialQuestion) {
+      const newMessage: QAMessage = {
+        id: crypto.randomUUID(),
+        question: initialQuestion,
+        answer: "",
+        citations: [],
+        status: "retrieving",
+        error: null,
+        sectionContext: sectionScope,
+      };
+      setMessages((prev) => [...prev, newMessage]);
+      const queryText = sectionScope
+        ? `[Context: ${sectionScope}] ${initialQuestion}`
+        : initialQuestion;
+      askQuestion(queryText);
+      onInitialQuestionConsumed?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialQuestion]);
 
   // Update latest message with streaming state
   useEffect(() => {
