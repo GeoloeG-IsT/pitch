@@ -80,11 +80,12 @@ Plans:
   2. Q&A is contextual to the section being viewed -- investor can ask questions inline at any section, not in a separate chat panel
   3. Viewer renders correctly and is usable on mobile devices (iPad, phone)
   4. Visual design is professional and polished -- comparable to Gamma or a high-quality landing page
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md -- Backend pitch API endpoint, frontend types, table parser, and dependency installation
+- [ ] 04-02-PLAN.md -- Viewer page with section renderers, TOC sidebar, and responsive layout
+- [ ] 04-03-PLAN.md -- Inline Q&A panel with FAB, conversation thread, and section-aware scoping
 
 ### Phase 5: Trust + HITL Validation
 **Goal**: AI responses display calibrated confidence indicators, low-confidence answers are routed to the founder for review before investors see them, and founders can approve/edit/reject from a dashboard
@@ -155,7 +156,7 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | 1. Foundation + Demo Content | 2/2 | Complete   | 2026-03-17 |
 | 2. Document Ingestion | 3/3 | Complete   | 2026-03-19 |
 | 3. RAG Query Engine | 2/2 | Complete   | 2026-03-19 |
-| 4. Smart Document Viewer | 0/0 | Not started | - |
+| 4. Smart Document Viewer | 0/3 | Planning complete | - |
 | 5. Trust + HITL Validation | 0/0 | Not started | - |
 | 6. Auth + Access Control | 0/0 | Not started | - |
 | 7. Analytics | 0/0 | Not started | - |
