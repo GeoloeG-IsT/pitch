@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-03-19T20:39:31.769Z"
-last_activity: 2026-03-19 -- Completed 05-02 (Investor-Facing Confidence Badges)
+stopped_at: Completed 05-03-PLAN.md
+last_updated: "2026-03-19T20:45:54.550Z"
+last_activity: 2026-03-19 -- Completed 05-03 (Founder Validation Dashboard)
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 13
-  completed_plans: 12
-  percent: 92
+  completed_plans: 13
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Investors can ask natural language questions about any aspect of a startup's pitch and get accurate, source-cited answers instantly, without the founder needing to be in the room.
-**Current focus:** Phase 5 Trust & HITL Validation. Plan 01 complete -- confidence scoring and review pipeline.
+**Current focus:** Phase 5 Trust & HITL Validation complete. All 3 plans done -- confidence scoring, investor badges, founder dashboard.
 
 ## Current Position
 
-Phase: 5 of 8 (Trust & HITL Validation)
-Plan: 2 of 3 in current phase (05-02 complete)
-Status: Executing Phase 5
-Last activity: 2026-03-19 -- Completed 05-02 (Investor-Facing Confidence Badges)
+Phase: 5 of 8 (Trust & HITL Validation) -- COMPLETE
+Plan: 3 of 3 in current phase (05-03 complete)
+Status: Phase 5 Complete
+Last activity: 2026-03-19 -- Completed 05-03 (Founder Validation Dashboard)
 
-Progress: [█████████░] 92%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [█████████░] 92%
 | Phase 04 P03 | 8min | 3 tasks | 6 files |
 | Phase 05 P01 | 7min | 2 tasks | 11 files |
 | Phase 05 P02 | 3min | 2 tasks | 9 files |
+| Phase 05 P03 | 4min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,9 @@ Recent decisions affecting current work:
 - [Phase 05]: Inline HSL values in badge classNames for direct color control
 - [Phase 05]: callbackRef pattern in useNotificationStream to avoid WebSocket reconnects
 - [Phase 05]: queryId added to QAMessage for notification-to-message matching
+- [Phase 05]: SiteNav as separate client component (layout.tsx is server component)
+- [Phase 05]: PendingCountBadge polls every 30s via setInterval (no WebSocket needed for count)
+- [Phase 05]: fetchReviewHistory merges three status-filtered API calls client-side
 
 ### Pending Todos
 
@@ -121,6 +125,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T20:39:31.766Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-03-19T20:45:54.547Z
+Stopped at: Completed 05-03-PLAN.md
 Resume file: None
