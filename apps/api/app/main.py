@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.documents import router as documents_router
 from app.api.v1.health import router as health_router
+from app.api.v1.query import router as query_router
 from app.core.config import settings
 
 # Expose OpenAI key to libraries that read os.environ directly (e.g. LlamaIndex)
@@ -26,3 +27,4 @@ app.add_middleware(
 
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(documents_router, prefix="/api/v1")
+app.include_router(query_router, prefix="/api/v1")
