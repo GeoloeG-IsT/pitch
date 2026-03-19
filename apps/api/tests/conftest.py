@@ -139,3 +139,130 @@ def mock_openai_chat():
         mock_client.chat.completions.create = mock_create
         mock_openai_cls.return_value = mock_client
         yield mock_create
+
+
+# ---------------------------------------------------------------------------
+# RAG pipeline fixtures (Phase 3)
+# ---------------------------------------------------------------------------
+
+SAMPLE_CHUNKS = [
+    {
+        "id": "chunk-aaa",
+        "document_id": "doc-111",
+        "content": "Revenue grew 150% year-over-year to $2.5M ARR.",
+        "section_number": 3,
+        "page_number": 3,
+        "chunk_type": "text",
+        "metadata": {},
+        "token_count": 15,
+        "similarity": 0.85,
+    },
+    {
+        "id": "chunk-bbb",
+        "document_id": "doc-222",
+        "content": "| Metric | Q1 | Q2 |\n|---|---|---|\n| Revenue | $500K | $700K |",
+        "section_number": 5,
+        "page_number": 5,
+        "chunk_type": "table",
+        "metadata": {},
+        "token_count": 25,
+        "similarity": 0.80,
+    },
+    {
+        "id": "chunk-ccc",
+        "document_id": "doc-111",
+        "content": "The team has 10 years of enterprise SaaS experience.",
+        "section_number": 1,
+        "page_number": 1,
+        "chunk_type": "text",
+        "metadata": {},
+        "token_count": 12,
+        "similarity": 0.70,
+    },
+]
+
+
+@pytest.fixture
+def mock_async_openai_embedding():
+    """Patch AsyncOpenAI to return zero-vector embeddings."""
+    mock_embedding = MagicMock()
+    mock_embedding.embedding = ZERO_EMBEDDING
+
+    mock_response = MagicMock()
+    mock_response.data = [mock_embedding]
+
+    mock_client = MagicMock()
+    mock_client.embeddings = MagicMock()
+    mock_client.embeddings.create = AsyncMock(return_value=mock_response)
+
+    with patch("openai.AsyncOpenAI", return_value=mock_client):
+        yield mock_client
+
+
+@pytest.fixture
+def mock_async_openai_streaming():
+    """Patch AsyncOpenAI to return a mock streaming response."""
+
+    async def _stream_generator():
+        tokens = ["The ", "answer ", "is ", "42."]
+        for token in tokens:
+            chunk = MagicMock()
+            chunk.choices = [MagicMock()]
+            chunk.choices[0].delta = MagicMock()
+            chunk.choices[0].delta.content = token
+            yield chunk
+        # Final chunk with content=None
+        final = MagicMock()
+        final.choices = [MagicMock()]
+        final.choices[0].delta = MagicMock()
+        final.choices[0].delta.content = None
+        yield final
+
+    mock_client = MagicMock()
+    mock_client.chat = MagicMock()
+    mock_client.chat.completions = MagicMock()
+    mock_client.chat.completions.create = AsyncMock(return_value=_stream_generator())
+
+    with patch("openai.AsyncOpenAI", return_value=mock_client):
+        yield mock_client
+
+
+@pytest.fixture
+def mock_supabase_rpc():
+    """Patch get_service_client to return mock RPC results."""
+    mock_result = MagicMock()
+    mock_result.data = SAMPLE_CHUNKS
+
+    mock_rpc_call = MagicMock()
+    mock_rpc_call.execute = MagicMock(return_value=mock_result)
+
+    mock_client = MagicMock()
+    mock_client.rpc = MagicMock(return_value=mock_rpc_call)
+
+    with patch("app.services.retrieval.get_service_client", return_value=mock_client):
+        yield mock_client
+
+
+@pytest.fixture
+def mock_cohere_rerank():
+    """Patch cohere.ClientV2 to return reordered results."""
+    result_0 = MagicMock()
+    result_0.index = 2
+    result_0.relevance_score = 0.95
+
+    result_1 = MagicMock()
+    result_1.index = 0
+    result_1.relevance_score = 0.80
+
+    result_2 = MagicMock()
+    result_2.index = 1
+    result_2.relevance_score = 0.30
+
+    mock_rerank_response = MagicMock()
+    mock_rerank_response.results = [result_0, result_1, result_2]
+
+    mock_co = MagicMock()
+    mock_co.rerank = MagicMock(return_value=mock_rerank_response)
+
+    with patch("cohere.ClientV2", return_value=mock_co):
+        yield mock_co
