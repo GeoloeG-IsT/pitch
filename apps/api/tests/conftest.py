@@ -266,3 +266,6 @@ def mock_cohere_rerank():
 
     with patch("cohere.ClientV2", return_value=mock_co):
         yield mock_co
+
+
+# TODO (06-01): Add auth_headers fixture after JWT auth is implemented
