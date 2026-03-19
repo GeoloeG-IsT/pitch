@@ -2,66 +2,91 @@
 
 # services
 
-Orchestrates document ingestion by routing uploaded files to format-specific parsers, mapping parsed nodes to database chunk records, and managing document lifecycle from upload to ready/error states.
+Core backend service layer implementing document ingestion (parser routing, chunk embedding, status lifecycle), RAG query pipeline (vector search with metadata boosting, Cohere reranking, GPT-4o streaming), and LlamaIndex node-to-database schema mapping for investment document Q&A.
 
 ## Contents
 
-**[ingestion.py](./ingestion.py)** — `process_document(doc_id, file_bytes, file_type)` transitions document status (pending → processing → ready/error), delegates to `pipeline.process_file`, batch-inserts chunks (50 per batch) into Supabase, updates documents.metadata with chunk_count or error message; `delete_document_chunks(doc_id)` removes all chunks for a document.
+**[ingestion.py](./ingestion.py)** — `process_document(doc_id, file_bytes, file_type)` orchestrates status transitions (pending→processing→ready/error), invokes parser via `process_file()`, batch-inserts chunks (50/batch) to Supabase; `delete_document_chunks(doc_id)` purges by document_id.
 
-**[pipeline.py](./pipeline.py)** — `process_file(file_bytes, file_type, document_id)` dispatches to parsers/excel_parser.py (xlsx), parsers/pdf_pipeline.py (pdf), parsers/markdown_pipeline.py (md/txt); returns chunk dicts ready for database insertion; raises ValueError on unsupported file_type.
+**[node_mapper.py](./node_mapper.py)** — `node_to_chunk_record(node, document_id)` converts LlamaIndex BaseNode to chunks table dict; extracts page_label/source metadata into page_number column, detects chunk_type ("heading" via header_path, "table" via markdown heuristic `|`/`---`, else "text"), counts tokens via tiktoken text-embedding-3-small encoder.
 
-**[node_mapper.py](./node_mapper.py)** — `node_to_chunk_record(node, document_id)` transforms LlamaIndex BaseNode into chunk table record with document_id, content, embedding, section_number, page_number, chunk_type, metadata, token_count fields.
+**[pipeline.py](./pipeline.py)** — `process_file(file_bytes, file_type, document_id)` dispatches to parser modules (parsers/excel_parser.py, parsers/pdf_pipeline.py, parsers/markdown_pipeline.py), maps nodes via `node_to_chunk_record`, returns chunk dicts; supports "pdf", "xlsx", "md", "txt".
 
-## Data Flow
+**[query_engine.py](./query_engine.py)** — `run_query_pipeline(question, query_id, send_message)` executes retrieval→reranking (via `retrieve_and_rerank`), assembles context under TOKEN_BUDGET=6000, streams gpt-4o response with citations; `build_context_prompt` formats chunks as `[{title}, Section {section}] ({chunk_type})\n{content}`; `extract_citations` maps chunks to Citation objects.
 
-1. **File Upload** → `ingestion.process_document` receives doc_id, file_bytes, file_type; sets status="processing" in documents table
-2. **Format Dispatch** → `pipeline.process_file` routes to parsers/excel_parser.py (direct chunk dicts), parsers/pdf_pipeline.py (BaseNode list), or parsers/markdown_pipeline.py (BaseNode list)
-3. **Node Transformation** → PDF/Markdown results pass through `node_to_chunk_record` to normalize BaseNode metadata into database schema
-4. **Batch Insertion** → ingestion.py inserts chunks in batches of 50 via Supabase client
-5. **Status Update** → documents.status="ready", metadata={"chunk_count": N} on success; status="error", metadata={"error": "..."} on failure
-
-## File Relationships
-
-- **ingestion.py** imports `process_file` from pipeline.py, `get_service_client` from app.core.supabase
-- **pipeline.py** imports `parse_excel` from parsers/excel_parser.py, `run_pdf_pipeline` from parsers/pdf_pipeline.py, `run_markdown_pipeline` from parsers/markdown_pipeline.py, `node_to_chunk_record` from node_mapper.py
-- **node_mapper.py** consumes LlamaIndex BaseNode objects produced by parsers/pdf_pipeline.py and parsers/markdown_pipeline.py
-- Excel workflow bypasses node_mapper.py — parsers/excel_parser.py emits database-ready dicts directly
-
-## Behavioral Contracts
-
-**Document Status Transitions** (ingestion.py):
-- Initial: "pending"
-- During processing: "processing"
-- Success: "ready" with `documents.metadata = {"chunk_count": <int>}`
-- Failure: "error" with `documents.metadata = {"error": "<message>"}`
-
-**Batch Insertion** (ingestion.py):
-```python
-BATCH_SIZE = 50
-```
-Chunks inserted in batches of 50 to Supabase chunks table.
-
-**Chunk Type Inference** (node_mapper.py):
-- `chunk_type="heading"` if node metadata contains header_path or heading keys
-- `chunk_type="table"` if content matches `"|"` AND `"---"` (markdown table syntax)
-- `chunk_type="text"` fallback
-
-**Page Number Extraction** (node_mapper.py):
-- Legacy: `page_label` metadata key (0-based)
-- Current: `source` metadata key (1-based, requires `int(value) - 1`)
-
-**Metadata Filtering** (node_mapper.py):
-```python
-_STRIP_KEYS = frozenset({"page_label", "source", "file_path", "file_name", "chunk_type", "total_pages"})
-```
-Removes first-class columns from JSONB metadata field to prevent duplication.
-
-**Token Counting** (node_mapper.py):
-```python
-tiktoken.encoding_for_model("text-embedding-3-small")
-```
-All chunks receive token_count using OpenAI's text-embedding-3-small tokenizer.
+**[retrieval.py](./retrieval.py)** — `retrieve_and_rerank(question)` orchestrates: `get_query_embedding(question)` via text-embedding-3-small → `retrieve_chunks` pgvector RPC (match_count=20) → `apply_metadata_boost` (1.5x for chunk_type="table" if FINANCIAL_KEYWORDS/TABLE_KEYWORDS detected) → `rerank_chunks` via Cohere rerank-v3.5 (top_n=10, relevance_score>0.01).
 
 ## Subdirectories
 
-**[parsers/](./parsers/)** — Format-specific pipelines for Excel (GPT-4o-mini summarization + openpyxl), PDF (PyMuPDFReader + SentenceSplitter), Markdown (MarkdownNodeParser + SentenceSplitter); all use text-embedding-3-small embeddings with 500-token chunks and 50-token overlap.
+**[parsers/](./parsers/)** — Excel (gpt-4o-mini sheet summaries), PDF (PyMuPDFReader page extraction), Markdown (heading-based splits) pipelines producing LlamaIndex nodes with text-embedding-3-small embeddings; shared SentenceSplitter(chunk_size=500, chunk_overlap=50).
+
+## Architecture
+
+**Ingestion Flow:** API route (apps/api/app/api/v1/documents.py) → ingestion.py `process_document` → pipeline.py file_type dispatcher → parsers/* → node_mapper.py → Supabase chunks table batch insert.
+
+**Query Flow:** API route (apps/api/app/api/v1/query.py) → query_engine.py `run_query_pipeline` → retrieval.py `retrieve_and_rerank` → context assembly → OpenAI streaming → Citation extraction.
+
+**Service Client Access:** All modules depend on `get_service_client()` from app/core/supabase.py for Supabase client instances; query_engine.py/retrieval.py use AsyncOpenAI with settings.openai_api_key.
+
+## Data Flow
+
+**Document Processing:**
+1. ingestion.py receives file_bytes, updates documents.status="processing"
+2. pipeline.py routes to parser (PDF→PyMuPDFReader, Excel→openpyxl, Markdown→llama_index MarkdownNodeParser)
+3. Parser returns BaseNode[] with embeddings
+4. node_mapper.py transforms to chunk schema dicts
+5. ingestion.py batch-inserts to chunks table, updates documents.status="ready" with chunk_count
+
+**Query Processing:**
+1. retrieval.py generates question embedding (text-embedding-3-small)
+2. Supabase RPC match_chunks returns 20 nearest neighbors (pgvector cosine similarity)
+3. apply_metadata_boost multiplies similarity by 1.5 for chunk_type="table" if question contains financial/table keywords
+4. rerank_chunks filters via Cohere rerank-v3.5 (relevance_score>0.01), returns top 10
+5. query_engine.py assembles context (6000 token budget), streams gpt-4o response, emits citations
+
+## Behavioral Contracts
+
+**SYSTEM_PROMPT (query_engine.py):** `"You are an investment analyst assistant helping a CFO understand startup pitch decks and financial documents. Answer questions based ONLY on the provided source materials. Always cite your sources using [Document Name, Section] format. Be concise (typically 2-4 sentences) unless asked for more detail. If you don't know or the documents don't contain the information, say so clearly. Never make up or assume information not in the sources. {context}"`
+
+**Metadata Boost Logic (retrieval.py):**
+- FINANCIAL_KEYWORDS: revenue, cost, profit, margin, arr, burn, runway, valuation, funding, financial, price, subscription, tam, sam, som
+- TABLE_KEYWORDS: compare, comparison, table, breakdown, numbers, data, metrics
+- Boost factor: 1.5x for chunk_type="table" when question contains any keyword
+
+**Chunk Type Heuristics (node_mapper.py):**
+- "heading": node.metadata contains header_path or heading
+- "table": node.text contains `|` and `---` (markdown table pattern)
+- "text": default fallback
+
+**Page Number Extraction (node_mapper.py):** Reads page_label or source metadata (1-based string from PyMuPDFReader), converts to int via `int(value.split()[0]) if value else None`.
+
+**Token Budget (query_engine.py):** TOKEN_BUDGET=6000 enforced via tiktoken text-embedding-3-small encoder in `build_context_prompt`; chunks appended until budget exceeded, then truncated.
+
+**Reranking Threshold (retrieval.py):** Cohere rerank-v3.5 results filtered by relevance_score>0.01; fallback to similarity order if COHERE_API_KEY unset.
+
+**Empty Document Handling (query_engine.py):** Returns `"I don't have any source documents to reference yet. Please upload documents first, then try your question again."` with empty citations when no chunks match.
+
+## Integration Points
+
+**Supabase Tables:**
+- documents: status, metadata.error, metadata.chunk_count (via ingestion.py)
+- chunks: document_id, content, embedding, section_number, page_number, chunk_type, metadata, token_count (via node_mapper.py)
+- RPC match_chunks: pgvector similarity search (via retrieval.py)
+
+**External APIs:**
+- OpenAI text-embedding-3-small: question/chunk embeddings (retrieval.py, parsers/*)
+- OpenAI gpt-4o: streaming answer generation (query_engine.py, temperature=0.3)
+- OpenAI gpt-4o-mini: Excel sheet summaries (parsers/excel_parser.py, max_tokens=1000)
+- Cohere rerank-v3.5: semantic reranking (retrieval.py, top_n=10)
+
+**Models (apps/api/app/models/):**
+- Citation: document_id, document_title, section_number, section_label, chunk_id, relevance_score (query.py)
+- Document, Chunk schemas (document.py, chunk.py)
+
+## Error Handling
+
+**Ingestion Failures (ingestion.py):** Exception during `process_file` logged via logger.exception, documents.status updated to "error", exception message stored in metadata.error field.
+
+**Query Pipeline (query_engine.py):** Streams error messages through send_message callback on exception; citation extraction defaults relevance_score to similarity field if missing.
+
+**Retrieval Fallbacks (retrieval.py):** Returns similarity-sorted chunks if Cohere API unavailable or all relevance_scores ≤0.01.

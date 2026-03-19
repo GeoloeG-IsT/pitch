@@ -2,26 +2,39 @@
 
 # documents
 
-Next.js 13+ App Router route segment implementing the `/documents` UI with async upload, polling, delete, and replace workflows.
+Route handler directory for the `/documents` page, exposing document upload/management UI with purpose-based categorization (pitch vs. rag) and real-time processing status polling.
 
 ## Contents
 
-### [layout.tsx](./layout.tsx)
-Sets page metadata (`title: "Documents | Zeee Pitch Zooo"`), wraps child routes via `DocumentsLayout` fragment passthrough.
+**[layout.tsx](./layout.tsx)** — Next.js layout defining page metadata (`title: "Documents | Zeee Pitch Zooo"`); renders children without wrapper.
 
-### [page.tsx](./page.tsx)
-Client component `DocumentsPage` managing document state (`documents: Document[]`, `loading`, `error`), polling map (`pollingIds: Map<string, number>`), and modal targets (`deleteTarget`, `replaceTarget`). Implements upload via `uploadDocument` API, polls pending/processing documents at `POLL_INTERVAL_MS = 3000` with `POLL_TIMEOUT_MS = 5 * 60 * 1000` cutoff. Exposes `handleUpload`, `handleDeleteConfirm`, `handleReplaceConfirm` callbacks coordinating `UploadZone`, `DocumentList`, `DeleteDialog`, `ReplaceDialog` components.
+**[page.tsx](./page.tsx)** — `DocumentsPage()` client component managing document lifecycle: upload via `uploadDocument()`, status polling for `pending`/`processing` documents (3s interval, 5min timeout), deletion via `deleteDocument()`, replacement via `replaceDocument()`, purpose reassignment via `updateDocumentPurpose()`. State: `documents: Document[]`, `pollingIds: Map<string, number>`, `deleteTarget`, `replaceTarget`. Renders `UploadZone` (pitch/rag variants), `DocumentList`, `DeleteDialog`, `ReplaceDialog`. Handlers: `handleUpload(files, purpose)`, `handleDeleteConfirm()`, `handleReplaceConfirm()`, `handlePurposeChange(id, purpose)`.
 
-## Behavioral Contracts
+## API Integration
 
-**Polling interval:** `3000` ms  
-**Polling timeout:** `5 * 60 * 1000` ms  
-**Polled statuses:** `'pending'`, `'processing'`  
-**Terminal statuses:** `'ready'` (success toast), `'error'` (error toast)
+Imports `listDocuments`, `uploadDocument`, `getDocument`, `deleteDocument`, `replaceDocument`, `updateDocumentPurpose` from `@/lib/api`. On mount: calls `listDocuments()`, resumes polling for incomplete documents. Polling loop (`POLL_INTERVAL_MS = 3000`) calls `getDocument(id)` per tracked ID; stops on `ready`/`error` status or timeout (`POLL_TIMEOUT_MS = 300000`).
+
+## UI Components
+
+- **UploadZone** (pitch): label `"Drop pitch files here"`, description `"Shown in the investor pitch viewer"`
+- **UploadZone** (rag): label `"Drop annex files here"`, description `"Used for Q&A context only (not shown in viewer)"`
+- **DocumentList**: displays documents with `onDelete`, `onReplace`, `onPurposeChange` callbacks
+- **DeleteDialog**: controlled by `deleteTarget !== null`, displays `deleteTarget.title`
+- **ReplaceDialog**: controlled by `replaceTarget !== null`, displays `replaceTarget.doc.title`
 
 ## Error Handling
 
-**Backend unavailable on mount:** "Could not load documents. Check that the backend is running and refresh."  
-**Upload failure:** toast with error message and retry suggestion  
-**Delete/replace failure:** "Failed to delete/replace document. Please try again."  
-**Poll timeout:** "Processing is taking longer than expected. Refresh to check status."
+Connection error on initial `listDocuments()` renders error message page. Upload errors show toast: `Upload failed -- ${message}. Try again or choose a different file.`. Polling timeout shows toast: `'Processing is taking longer than expected. Refresh to check status.'`. Delete/replace failures show generic retry toast.
+
+## Behavioral Contracts
+
+- **Polling interval**: `POLL_INTERVAL_MS = 3000` (3 seconds)
+- **Polling timeout**: `POLL_TIMEOUT_MS = 5 * 60 * 1000` (5 minutes)
+- **Status transitions**: `pending`/`processing` → `ready` (stop polling, success toast) | `error` (stop polling, error toast) | timeout (error toast)
+- **Toast messages**:
+  - Upload start: `Processing ${file.name}...`
+  - Upload error: `Upload failed -- ${message}. Try again or choose a different file.`
+  - Delete success: `${deleteTarget.title} deleted`
+  - Replace start: `Processing ${replaceTarget.file.name}...`
+  - Purpose change: `Marked as ${purpose === "pitch" ? "Pitch" : "RAG"}`
+  - Timeout: `'Processing is taking longer than expected. Refresh to check status.'`

@@ -2,30 +2,21 @@
 
 # core
 
-Configuration and service client initialization layer for the FastAPI backend. Loads environment variables via Pydantic BaseSettings and provides a Supabase service client factory for privileged database operations.
+Backend configuration and infrastructure initialization layer. Provides environment-driven settings (`Settings` class with Supabase/OpenAI/Cohere credentials) and service-role Supabase client factory (`get_service_client()`) for RLS-bypassing database operations.
 
 ## Contents
 
-### Configuration
+- **[config.py](./config.py)** — `Settings` dataclass with `supabase_url`, `supabase_key`, `supabase_service_role_key`, `openai_api_key`, `cohere_api_key`, `environment` fields; loads from `.env` via `pydantic-settings`
+- **[supabase.py](./supabase.py)** — `get_service_client() -> Client` factory returning service-role authenticated client for unrestricted INSERT/UPDATE/DELETE on documents/chunks
 
-**[config.py](./config.py)** — `Settings(BaseSettings)` with `supabase_url`, `supabase_key`, `supabase_service_role_key`, `openai_api_key`, `environment` fields; singleton `settings` instance loads from `.env` at project root (4 levels up via `Path(__file__).resolve().parents[4]`).
+## Configuration
 
-### Service Clients
+`Settings` uses `SettingsConfigDict(env_file=..., extra="ignore")` to tolerate unknown environment variables. Default values: `supabase_url="http://127.0.0.1:54321"`, `environment="development"`.
 
-**[supabase.py](./supabase.py)** — `get_service_client()` returns `Client` authenticated with `supabase_service_role_key`, bypassing Row Level Security for backend operations on documents and chunks tables.
+## Security Model
 
-## Configuration Source
+Service role key bypasses Row Level Security policies. Used by `app/services/ingestion.py`, `app/services/pipeline.py` for backend write operations requiring elevated privileges.
 
-Settings resolve `.env` from project root using `Path(__file__).resolve().parents[4]`. `SettingsConfigDict(extra="ignore")` drops unknown variables.
+## File Relationships
 
-## Default Values
-
-- `supabase_url`: `"http://127.0.0.1:54321"`
-- `supabase_key`, `supabase_service_role_key`, `openai_api_key`: `""`
-- `environment`: `"development"`
-
-## Dependencies
-
-- `pydantic_settings.BaseSettings` for config loading
-- `supabase.create_client`, `supabase.Client` for service client factory
-- Internal: `app.core.config.settings` consumed by `get_service_client()`
+`config.settings` singleton consumed by `supabase.get_service_client()` and service layer modules (`app/services/ingestion.py`, `app/services/pipeline.py`, `app/services/query_engine.py`). Client factory pattern ensures consistent authentication across service operations.

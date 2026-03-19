@@ -2,53 +2,69 @@
 
 # packages/shared-types
 
-TypeScript type definitions for cross-service health monitoring contracts in a FastAPI + Next.js monorepo.
+Private TypeScript types package providing compile-time type contracts for cross-package API communication, primarily health check response schemas consumed by Next.js frontend and FastAPI backend.
 
 ## Contents
 
-- **[package.json](./package.json)** — Defines build configuration with `tsc` compilation to `dist/`, exports `dist/index.d.ts` types, version `0.0.0` (private package).
-- **[tsconfig.json](./tsconfig.json)** — Enforces `strict: true`, `target: "ESNext"`, `moduleResolution: "bundler"`, emits declarations to `dist/` from `src/`.
+### [package.json](./package.json)
+Defines `@zeee/shared-types` package with `build` (tsc → dist/index.js) and `typecheck` (tsc --noEmit) scripts, private=true to prevent npm publishing, exports dist/index.js (CommonJS) and dist/index.d.ts (TypeScript declarations).
+
+### [tsconfig.json](./tsconfig.json)
+Configures TypeScript compiler with ESNext target/module, bundler moduleResolution, declaration file emission to dist/, strict mode enabled, compiles src/ excluding node_modules/dist.
 
 ## Subdirectories
 
-- **[src/](./src/)** — Exports `HealthResponse` (aggregated `'healthy' | 'degraded'` status with frontend/backend/database states) and `ApiHealthResponse` (service metadata with optional database flag).
+### [src/](./src/)
+Exports `HealthResponse` (aggregate frontend/backend/database status with 'healthy'|'degraded' overall state) and `ApiHealthResponse` (service-level metadata with version string), enforcing compile-time contracts between apps/web/app/api/health/route.ts and apps/api/app/api/v1/health.py.
 
 ## Stack
 
-**Language:** TypeScript 5.9.3  
-**Output:** ESNext modules with `.d.ts` declarations  
-**Consumers:** `apps/web/app/api/health/route.ts`, `apps/api/app/api/v1/health.py`  
-**Build:** `pnpm build` → `tsc`, `pnpm typecheck` → `tsc --noEmit`
+**Build Toolchain:**
+- TypeScript 5.9.3 (devDependency)
+- Compilation: `tsc` (ESNext → CommonJS dist/)
+- Validation: `tsc --noEmit` (type checking only)
+
+**Entry Points:**
+- Main: dist/index.js (CommonJS)
+- Types: dist/index.d.ts (declaration bundle)
+
+**Build Outputs:**
+- Source: src/ (TypeScript modules)
+- Dist: dist/ (compiled JS + .d.ts)
 
 ## API Surface
 
-```typescript
-// src/index.ts
-export interface HealthResponse {
-  status: 'healthy' | 'degraded';
-  frontend: 'ok';
-  backend: 'ok' | 'degraded' | 'unreachable';
-  database: 'ok' | 'unreachable';
-  timestamp: string;
-}
+**Exported Types (from src/index.ts):**
+- `HealthResponse` — client-side aggregate health status
+- `ApiHealthResponse` — backend service health metadata
 
-export interface ApiHealthResponse {
-  status: 'ok';
-  service: string;
-  version: string;
-  database?: 'ok' | 'unreachable';
-}
-```
+**Status Value Enumerations:**
+- Frontend status: `'ok'`
+- Backend status: `'ok' | 'degraded' | 'unreachable'`
+- Database status: `'ok' | 'unreachable'`
+- Overall status: `'healthy' | 'degraded'`
+
+## File Relationships
+
+**Type Flow (unidirectional):**
+1. Backend (`apps/api/app/api/v1/health.py`) emits `ApiHealthResponse`
+2. Frontend health route (`apps/web/app/api/health/route.ts`) transforms backend response into `HealthResponse`
+3. Web components consume `HealthResponse` for UI rendering
+
+**Dependency Contracts:**
+- No runtime dependencies — pure type definitions
+- Consumed by apps/web (Next.js frontend)
+- Consumed by apps/api (FastAPI backend via TypeScript type generation)
+- Zero-cost abstraction at runtime (types erased after compilation)
 
 ## Behavioral Contracts
 
-**Status Enumerations:**
-- `HealthResponse.status`: `'healthy' | 'degraded'`
-- `HealthResponse.backend`: `'ok' | 'degraded' | 'unreachable'`
-- `HealthResponse.database`: `'ok' | 'unreachable'`
-- `ApiHealthResponse.status`: `'ok'` (literal type)
+**Module Format:**
+- Source: ESNext modules (`import`/`export`)
+- Output: CommonJS (`dist/index.js` with `require()`)
+- Declaration bundling: single `dist/index.d.ts` for all exported types
 
-**Field Constraints:**
-- `HealthResponse.frontend`: always `'ok'`
-- `HealthResponse.timestamp`: ISO 8601 format (`new Date().toISOString()`)
-- `ApiHealthResponse.database`: optional, present only when backend verifies Supabase connectivity
+**Compilation Constraints:**
+- `moduleResolution: bundler` — relies on bundler-specific resolution (not Node.js algorithm)
+- `strict: true` — all strict type checks enforced (noImplicitAny, strictNullChecks, etc.)
+- `skipLibCheck: true` — ignores type errors in node_modules/@types

@@ -2,31 +2,45 @@
 
 # lib
 
-Client-side utilities and API interface for Next.js application — document management operations and Tailwind CSS class composition.
+Shared utilities and API client layer for the Next.js application, encapsulating HTTP requests to backend endpoints and data transformation logic for documents, pitch content, and Q&A interactions.
 
 ## Contents
 
-- **[api.ts](./api.ts)** — exports `uploadDocument()`, `listDocuments()`, `getDocument()`, `deleteDocument()`, `replaceDocument()`, `formatFileSize()` for document CRUD operations against `/api/v1/documents`; defines `Document` type with `status: "pending" | "processing" | "ready" | "error"` and `DocumentListResponse` wrapper
-- **[utils.ts](./utils.ts)** — exports `cn()` variadic function combining clsx and twMerge for conflict-free Tailwind class merging
+### API Clients
+- **[api.ts](./api.ts)** — HTTP client for document CRUD: `uploadDocument`, `listDocuments`, `getDocument`, `updateDocumentPurpose`, `deleteDocument`, `replaceDocument`; exports `Document`, `DocumentListResponse` types; includes `formatFileSize` utility
+- **[pitch-api.ts](./pitch-api.ts)** — fetches pitch document chunks via `fetchPitch(): Promise<PitchResponse>`; exports `PitchChunk`, `PitchDocument`, `PitchResponse` types
+- **[query-api.ts](./query-api.ts)** — Q&A client with `createQuery(question: string): Promise<QueryResponse>`; exports `Citation`, `QueryResponse` types with citation metadata
+
+### Data Transformation
+- **[parse-table-content.ts](./parse-table-content.ts)** — extracts structured metric data from Markdown tables via `parseTableContent(content: string): MetricPair[] | null`; exports `MetricPair` interface
+
+### UI Utilities
+- **[utils.ts](./utils.ts)** — combines clsx and tailwind-merge for conditional className composition; exports `cn(...inputs: ClassValue[]): string`
 
 ## API Surface
 
-**Document Management:**
-- `uploadDocument(file: File, title?: string): Promise<Document>` — POST multipart FormData
-- `listDocuments(): Promise<DocumentListResponse>` — GET all documents
-- `getDocument(id: string): Promise<Document>` — GET single document by ID
-- `deleteDocument(id: string): Promise<void>` — DELETE document
-- `replaceDocument(id: string, file: File): Promise<Document>` — PUT new file to existing document ID
-- `formatFileSize(bytes: number | null): string` — returns KB/MB formatted string
+All API clients target `/api/v1/*` endpoints. Document operations use `multipart/form-data` for uploads, JSON for other requests. Query and pitch clients consume JSON responses.
 
-**UI Utilities:**
-- `cn(...inputs: ClassValue[])` — accepts clsx-compatible inputs (strings, objects, arrays), returns deduplicated Tailwind classes with specificity conflict resolution
+## Behavioral Contracts
 
-## Error Handling
+### Document Status Values
+- `status: "pending" | "processing" | "ready" | "error"` (from `Document` type in api.ts)
+- `purpose: "pitch" | "rag"` (from `Document` type in api.ts)
 
-All fetch operations throw `Error` with descriptive messages: `"Upload failed: {statusText}"`, `"Failed to load documents"`, `"Document not found"`, `"Delete failed"`, `"Replace failed"`.
+### Chunk Types
+- `chunk_type: "text" | "table" | "heading" | "image_caption"` (from `PitchChunk` in pitch-api.ts)
 
-## Dependencies
+### Markdown Table Parsing
+- Separator row pattern: `^\|[\s-|]+\|$` (from parse-table-content.ts)
+- Requires `|`-delimited rows with ≥2 cells (label, value, optional subLabel)
 
-- `clsx` — conditional className construction
-- `tailwind-merge` — Tailwind CSS class deduplication
+### File Size Formatting
+- `formatFileSize(bytes: number | null): string` — returns `"0 KB"` if null, `<1MB` as KB with 1 decimal, `≥1MB` as MB with 1 decimal (from api.ts)
+
+## File Relationships
+
+- **api.ts** consumed by `apps/web/components/documents/` components for document management UI
+- **pitch-api.ts** consumed by `apps/web/app/pitch/page.tsx` and `apps/web/components/viewer/pitch-viewer.tsx` for pitch content rendering
+- **query-api.ts** consumed by `apps/web/hooks/use-query-stream.ts` and `apps/web/components/query/` components for Q&A interactions
+- **parse-table-content.ts** consumed by `apps/web/components/viewer/table-section.tsx` for metric card rendering
+- **utils.ts** consumed by all component files in `apps/web/components/` for Tailwind class merging

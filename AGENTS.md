@@ -2,109 +2,54 @@
 
 # pitch (root)
 
-Turborepo monorepo for zeee-pitch-zooo project — orchestrates Next.js 16 web app with Supabase SSR authentication, FastAPI backend with LlamaIndex document ingestion, and pnpm workspaces for cross-package linking.
+Turborepo monorepo for zeee-pitch-zooo: Next.js 15 web client, FastAPI + LlamaIndex backend, Supabase database, shared TypeScript types. Orchestrates multi-language builds (TypeScript, Python), local dev environment (Supabase on ports 54321-54323), and workspace dependency resolution via pnpm.
 
 ## Contents
 
-- **[package.json](./package.json)**: Defines workspace scripts `dev`, `build`, `lint`, `typecheck`, `test` (delegate to Turbo), `db:start`/`db:stop`/`db:reset`/`db:migrate` (Supabase CLI), `content:build` (runs `uv run python build-all.py` in content/). Dependencies: `turbo@^2.8.17`, `supabase@^2.81.0`. Enforces `pnpm@10.32.1`. Restricts `onlyBuiltDependencies` to `supabase` and `sharp`.
-- **[pnpm-workspace.yaml](./pnpm-workspace.yaml)**: Declares workspace patterns `apps/*` and `packages/*` for pnpm package resolution and cross-package linking via `workspace:*` protocol.
-- **[turbo.json](./turbo.json)**: Configures task dependency graph — `build` depends on `^build`, outputs to `.next/**` and `dist/**`; `dev` runs persistently with caching disabled; `lint`, `typecheck`, `test` depend on `^build`.
+- **[package.json](./package.json)**: Root package.json defining Turbo scripts (`dev`, `build`, `lint`, `typecheck`, `test`), Supabase CLI commands (`db:start`, `db:stop`, `db:reset`, `db:migrate`), Python content build (`content:build` via `uv run python build-all.py`), locked to `pnpm@10.32.1`, dependencies `turbo@^2.8.17`, `supabase@^2.81.0`.
+- **[pnpm-workspace.yaml](./pnpm-workspace.yaml)**: Workspace glob patterns `apps/*`, `packages/*` for pnpm monorepo structure.
+- **[turbo.json](./turbo.json)**: Turbo task definitions: `build` (depends on `^build`, outputs `.next/**`, `dist/**`), `dev` (cache disabled, persistent), `lint`/`typecheck`/`test` (depend on `^build`).
 
 ## Subdirectories
 
-- **[apps/](./apps/)**: Contains FastAPI backend (`api/`) serving `/api/v1` endpoints for document upload/ingestion with LlamaIndex parsers (PDF/Excel/Markdown) and Supabase vector store persistence, and Next.js 16 frontend (`web/`) with App Router, SSR authentication, Tailwind CSS v4, shadcn/ui `base-nova` components, document upload UI with drag-and-drop validation, polling-based status tracking (3s interval, 5min timeout), and API proxy rewrites to backend.
+- **[supabase/](./supabase/)**: Supabase local dev config (PostgreSQL 15 on 54322, API on 54321, Studio on 54323, JWT expiry 3600s, email confirmations disabled).
+- **[apps/api/](./apps/api/)**: FastAPI backend with LlamaIndex (document ingestion, query engine, Supabase vector store, Excel/PDF/Markdown parsers).
+- **[apps/web/](./apps/web/)**: Next.js 15 web app with shadcn/ui (pitch viewer, Q&A panel, document upload, streaming query interface).
+- **[packages/shared-types/](./packages/shared-types/)**: TypeScript type definitions shared across web and API.
+
+## Monorepo Architecture
+
+**Task Orchestration**: Turbo coordinates `build`, `dev`, `lint`, `typecheck`, `test` across workspaces. `^build` dependency ensures libraries build before apps.
+
+**Workspace Packages**: `apps/api` (Python), `apps/web` (TypeScript), `packages/shared-types` (TypeScript) linked via `pnpm-workspace.yaml`.
+
+**Database Lifecycle**: `db:start` launches Supabase (54321-54323), `db:reset` wipes state, `db:migrate` creates migration files.
+
+**Content Build**: `content:build` runs Python tooling in `content/` (not shown in directory structure).
+
+## Development Workflow
+
+1. `pnpm db:start` — launch Supabase (PostgreSQL 15, API, Studio)
+2. `pnpm dev` — start all workspace dev servers (Next.js on 3000, FastAPI inference)
+3. `pnpm content:build` — rebuild Python-processed content
+4. `pnpm db:migrate` — generate new migration after schema changes
 
 ## Stack
 
-- **Monorepo**: Turborepo 2.8.17 + pnpm 10.32.1 workspaces
-- **Frontend**: Next.js 16.1.7 (apps/web), React 19.1.0, Tailwind CSS 4.2.1, shadcn/ui 4.0.8, Supabase SSR 0.6.2
-- **Backend**: FastAPI 0.135.0 (apps/api), Python 3.11+, uvicorn ASGI, LlamaIndex 0.14.18+, Supabase Python SDK
-- **Database**: Supabase vector store with pgvector, OpenAI text-embedding-3-small
-- **Build**: Turbo task orchestration, `uv` package manager for Python backend
-- **Content**: Python-based documentation build (`uv run python build-all.py` in content/)
-
-## Architecture
-
-**Request Flow**:
-1. Browser → Next.js frontend (`apps/web/app/documents/`)
-2. Client-side API calls (`apps/web/lib/api.ts`) → `/api/v1/documents`
-3. Next.js rewrites → FastAPI backend (`apps/api/app/api/v1/documents.py`)
-4. Backend delegates to ingestion service (`apps/api/app/services/ingestion.py`)
-5. Format-specific parser → LlamaIndex BaseNode stream
-6. Node mapper normalization → chunk records
-7. Supabase service client batch insert (50 chunks/batch)
-8. Frontend polls document status until terminal state
-
-**CORS Configuration**:
-- Allowed origins: `http://localhost:3000`
-- Credentials: enabled
-- Methods/Headers: wildcard
-
-**API Surface**:
-- `POST /api/v1/documents` — multipart upload, returns `document_id`
-- `GET /api/v1/documents` — list with filter params
-- `GET /api/v1/documents/{id}` — fetch single document
-- `DELETE /api/v1/documents/{id}` — soft/hard delete
-- `PUT /api/v1/documents/{id}/replace` — multipart replace
-- `GET /api/health` — aggregated system status
-
-## Workflow & Conventions
-
-- **Package Manager**: pnpm 10.32.1 (enforced via package.json `packageManager` field). Use `pnpm install`, `pnpm run <script>` for all operations.
-- **Workspace Scripts**: Run from root — `pnpm dev` starts all apps, `pnpm build` compiles entire monorepo, `pnpm lint`/`pnpm typecheck`/`pnpm test` validate codebase.
-- **Database Lifecycle**: `pnpm db:start` initializes Supabase local, `pnpm db:stop` halts services, `pnpm db:reset` wipes and reinitializes DB, `pnpm db:migrate` creates new migration file.
-- **Content Build**: `pnpm content:build` runs Python documentation generator in content/ directory via `uv run python build-all.py`.
-- **Development**:
-  - Backend: `cd apps/api && pnpm dev` → uvicorn hot reload on port 8000
-  - Frontend: `cd apps/web && pnpm dev` → Next.js dev server on port 3000
-  - Backend proxy: Automatic via `next.config.ts` rewrites
-- **Testing**:
-  - Backend: `cd apps/api && pnpm test` → pytest with fail-fast
-  - Frontend: `cd apps/web && pnpm typecheck` before commits
-- **Dependency Management**:
-  - Backend: `uv` package manager, all scripts prefixed `uv run`
-  - Frontend: npm/pnpm via workspace root
-- **Type Safety**:
-  - Backend: mypy strict mode targeting `app/`
-  - Frontend: TypeScript strict mode, `isolatedModules: true`
-- **Styling Conventions**:
-  - Use Tailwind utilities composed via `cn()` helper
-  - Prefer CSS variables from `globals.css` theme tokens
-  - Component variants via CVA in `components/ui/`
-- **Build Optimization**: Turbo caches `build`, `lint`, `typecheck`, `test` tasks. Disable caching for `dev` tasks to ensure live reload.
-- **Native Dependencies**: Only `supabase` and `sharp` are allowed to build native modules (`pnpm.onlyBuiltDependencies`).
+**Frontend**: Next.js 15, React 19, shadcn/ui, Tailwind CSS  
+**Backend**: FastAPI, LlamaIndex, Supabase (PostgreSQL 15, vector extensions)  
+**Tooling**: Turbo (monorepo tasks), pnpm (workspace manager), uv (Python build)  
+**Local Services**: Supabase API (54321), PostgreSQL (54322), Studio (54323)
 
 ## Behavioral Contracts
 
-**Document Status Lifecycle**:
-- `"pending"` — Initial upload state
-- `"processing"` — Ingestion in progress
-- `"ready"` — Successfully indexed with `metadata.chunk_count`
-- `"error"` — Failed with `metadata.error` message
+**Supabase Ports**:
+- API: `54321`
+- PostgreSQL: `54322`
+- Studio: `54323`
 
-**Supported MIME Types**:
-- `application/pdf`
-- `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-- `text/markdown`
-- `text/plain`
+**JWT Lifecycle**: 3600s expiry, 10s refresh token reuse interval
 
-**Polling Parameters**:
-- Interval: `3000` ms
-- Timeout: `300000` ms (5 minutes)
-- Polled statuses: `["pending", "processing"]`
+**Build Outputs**: `.next/**` (Next.js), `dist/**` (package builds)
 
-**Chunk Classification**:
-```python
-chunk_type: Literal["text", "table", "heading", "image_caption"]
-```
-
-**Demo User Constant**:
-```python
-DEMO_USER_ID = "00000000-0000-0000-0000-000000000000"
-```
-
-**Workspace Patterns**: pnpm resolves `apps/*` and `packages/*` as workspace roots.
-
-**Turbo Task Dependencies**: `lint`, `typecheck`, `test` wait for `^build` to complete before running.
-
-**Persistent Dev Tasks**: `dev` tasks run with `persistent: true`, no caching (`cache: false`).
+**Package Manager**: `pnpm@10.32.1` (locked)

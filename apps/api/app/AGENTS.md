@@ -2,94 +2,49 @@
 
 # app
 
-FastAPI application root defining the API server instance, CORS policy, and routing surface for the document processing backend.
+FastAPI application entrypoint orchestrating API router registration (health, documents, query, pitch under `/api/v1`), CORS middleware for `http://localhost:3000`, and OpenAI environment configuration for LlamaIndex direct key access.
 
 ## Contents
 
-**[main.py](./main.py)** — `app: FastAPI` instance titled "Zeee Pitch Zooo API" v0.1.0; configures `CORSMiddleware` allowing localhost:3000 origin with credentials; mounts `health_router` and `documents_router` from api/v1/ at `/api/v1` prefix; sets `OPENAI_API_KEY` in `os.environ` from `settings.openai_api_key` for LlamaIndex compatibility.
+- **[main.py](./main.py)** — `app: FastAPI` instance ("Zeee Pitch Zooo API" v0.1.0); includes `health_router`, `documents_router`, `query_router`, `pitch_router` under `/api/v1` prefix; sets `os.environ["OPENAI_API_KEY"]` from `settings.openai_api_key` to enable LlamaIndex environ-based key resolution
 
 ## Subdirectories
 
-**[api/](./api/)** — Versioned HTTP API surfaces providing `/health` endpoint (service metadata + database connectivity) and `/documents` resource handlers (POST, GET, GET /{id}, DELETE /{id}, PUT /{id}) with `DEMO_USER_ID` hardcoded constant and replace-on-duplicate upload logic.
+- **[api/v1/](./api/v1/)** — REST endpoint layer (health checks, document upload/deletion, pitch viewer data, streaming query execution)
+- **[core/](./core/)** — Environment-driven configuration (`Settings` dataclass with Supabase/OpenAI/Cohere credentials), service-role Supabase client factory (`get_service_client()` bypassing RLS)
+- **[models/](./models/)** — Pydantic schemas for API contracts: `DocumentCreate`/`DocumentResponse`, `ChunkRecord`, `PitchResponse`, `QueryResponse`/`Citation`
+- **[services/](./services/)** — Business logic layer: document ingestion pipeline (parser routing, chunk embedding, status lifecycle), RAG query engine (vector search, metadata boosting, Cohere reranking, GPT-4o streaming), LlamaIndex node-to-database mapping
 
-**[core/](./core/)** — Environment configuration (`Settings` from config.py) and Supabase service client factory (`get_service_client()` from supabase.py) using service role key for privileged database access.
+## Configuration
 
-**[models/](./models/)** — Pydantic schemas: `ChunkRecord` (vector database record with embedding, chunk_type, positional metadata), `DocumentCreate` (upload request), `DocumentResponse`/`DocumentListResponse` (API serialization).
+- **CORS Policy:** `CORSMiddleware` allows origin `http://localhost:3000`, credentials, all methods/headers
+- **OpenAI Key Injection:** `settings.openai_api_key` (from `core/config.py`) written to `os.environ["OPENAI_API_KEY"]` at startup to satisfy LlamaIndex's environment-based key lookup (used by `services/parsers/*` and `services/query_engine.py`)
 
-**[services/](./services/)** — Document ingestion orchestration: `process_document` transitions document status (pending → processing → ready/error) with batch chunk insertion (50 per batch); `pipeline.process_file` routes to format-specific parsers; `node_mapper.node_to_chunk_record` transforms LlamaIndex BaseNode objects into database chunk dicts with chunk_type inference and token counting.
+## Architecture
 
-## Stack
+**Request Flow:**
+1. HTTP request → FastAPI router (api/v1/documents.py, api/v1/query.py, api/v1/pitch.py)
+2. Router calls service layer (services/ingestion.py, services/query_engine.py)
+3. Service layer interacts with Supabase via `get_service_client()` (core/supabase.py)
+4. Pydantic models (models/*) validate request/response payloads
 
-- **Framework**: FastAPI 0.1.0
-- **Middleware**: `fastapi.middleware.cors.CORSMiddleware`
-- **Database Client**: Supabase Python SDK (service role authentication)
-- **Validation**: Pydantic BaseModel, BaseSettings
-- **Routing**: APIRouter mount pattern (api/v1/health.py, api/v1/documents.py → `/api/v1`)
+**Application Bootstrap Sequence:**
+1. `main.py` imports `settings` singleton from `core/config.py`
+2. Sets `os.environ["OPENAI_API_KEY"]` if `settings.openai_api_key` present
+3. Initializes `app: FastAPI` with title/version metadata
+4. Mounts `CORSMiddleware` for localhost:3000
+5. Includes routers from `api/v1/*` under `/api/v1` prefix
 
-## CORS Policy
+## Integration Points
 
-- **Allowed Origins**: `http://localhost:3000`
-- **Allowed Methods**: `["*"]`
-- **Allowed Headers**: `["*"]`
-- **Credentials**: `allow_credentials=True`
-
-## Behavioral Contracts
-
-**File Type Vocabulary** (models/document.py):
-```python
-file_type: Literal["pdf", "xlsx", "md", "txt"]
-```
-
-**Chunk Type Classification** (models/chunk.py):
-```python
-chunk_type: Literal["text", "table", "heading", "image_caption"]
-```
-
-**Token Counting Model** (services/node_mapper.py):
-```python
-tiktoken.encoding_for_model("text-embedding-3-small")
-```
-
-**Metadata Filtering** (services/node_mapper.py):
-```python
-_STRIP_KEYS = frozenset({"page_label", "source", "file_path", "file_name", "chunk_type", "total_pages"})
-```
-
-**Document Status Transitions** (services/ingestion.py):
-- Initial: "pending"
-- During processing: "processing"
-- Success: "ready" with `documents.metadata = {"chunk_count": <int>}`
-- Failure: "error" with `documents.metadata = {"error": "<message>"}`
-
-**Batch Insertion** (services/ingestion.py):
-```python
-BATCH_SIZE = 50
-```
-
-**Supported File Extensions** (api/v1/documents.py):
-```python
-_SUPPORTED_EXTENSIONS = {".pdf", ".xlsx", ".md", ".txt"}
-```
-
-**Demo User Constant** (api/v1/documents.py):
-```python
-DEMO_USER_ID = "00000000-0000-0000-0000-000000000000"
-```
-
-## Data Flow
-
-1. **API Request** → main.py routes to api/v1/documents.py endpoints
-2. **File Upload** → services/ingestion.py calls `process_document`, sets status="processing"
-3. **Format Dispatch** → services/pipeline.py routes by file_type to parsers/excel_parser.py (direct chunk dicts), parsers/pdf_pipeline.py (BaseNode list), parsers/markdown_pipeline.py (BaseNode list)
-4. **Normalization** → services/node_mapper.py transforms BaseNode → chunk table record schema with chunk_type inference, page number extraction, metadata filtering
-5. **Database Write** → services/ingestion.py batch-inserts chunks (50 per batch), updates documents.status and metadata
-6. **Status Update** → documents.status="ready" + chunk_count on success; status="error" + error message on failure
+- **Router Registration:** `app.include_router(health_router, prefix="/api/v1")`, `documents_router`, `query_router`, `pitch_router` (all under `/api/v1`)
+- **Settings Dependency:** Imports `settings` from `core/config.py` for OpenAI key configuration
+- **Service Layer:** Routers delegate to `services/ingestion.py::process_document()`, `services/query_engine.py::run_query_pipeline()`, Supabase direct queries (pitch.py)
 
 ## File Relationships
 
-- **main.py** imports `health_router`, `documents_router` from api/v1/
-- **api/v1/documents.py** imports `process_document`, `delete_document_chunks` from services/ingestion.py, `DocumentResponse`, `DocumentListResponse` from models/document.py, `get_service_client` from core/supabase.py
-- **services/ingestion.py** imports `process_file` from services/pipeline.py
-- **services/pipeline.py** imports parsers from services/parsers/, `node_to_chunk_record` from services/node_mapper.py
-- **services/node_mapper.py** consumes LlamaIndex BaseNode objects, outputs chunk table-compatible dicts
-- **core/supabase.py** uses `settings` from core/config.py for client initialization
+- **main.py** → imports routers from `api/v1/{health,documents,query,pitch}.py`
+- **main.py** → imports `settings` from `core/config.py` for OpenAI key setup
+- Routers depend on `core/supabase.py::get_service_client()` for database access
+- Service layer (services/*) consumes models (models/*) for schema validation
+- All modules reference `settings` singleton for credentials (Supabase URL/keys, OpenAI key, Cohere key)

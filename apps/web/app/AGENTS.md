@@ -2,66 +2,37 @@
 
 # app
 
-Next.js App Router entry point defining global styles, root layout, system health dashboard, and document management routes.
+Next.js 15 App Router root directory defining global theme infrastructure, root layout with metadata/font configuration, health monitoring homepage, and route segments for documents, pitch viewer, and query interface.
 
 ## Contents
 
-### [globals.css](./globals.css)
-Defines CSS custom properties for Tailwind-based theme system. Exports `--color-*` semantic tokens (background, foreground, primary, secondary, muted, accent, destructive, border, input, ring, chart-1 through chart-5, sidebar variants) in HSL format for light mode, OKLCH format for dark mode via `.dark` class. Geometry: `--radius` (0.625rem) and derived scale (sm, md, lg, xl, 2xl, 3xl, 4xl). Typography: `--font-sans` variable.
+**[globals.css](./globals.css)** — Tailwind-based design system with dual color space tokens (HSL `--color-*` and OKLCH `--*`), light/dark theme classes, computed radius multipliers (`--radius-sm` through `--radius-4xl`), imports shadcn/tailwind.css + tw-animate-css, defines dark mode via `.dark` ancestor class.
 
-### [layout.tsx](./layout.tsx)
-Exports `RootLayout` component and `metadata` object (title "Zeee Pitch Zooo", description "AI-powered interactive pitch platform"). Configures Geist (`--font-sans` variable) and Inter fonts via `next/font/google`. Root `<html>` applies `lang="en"`, `font-sans`, `geist.variable`; `<body>` uses `inter.className` wrapping `{children}` + `<Toaster />` from `@/components/ui/sonner`.
+**[layout.tsx](./layout.tsx)** — `RootLayout({ children })` wrapping all pages with Geist/Inter fonts (`--font-sans` variable, Latin subsets), metadata `{title: "Zeee Pitch Zooo", description: "AI-powered interactive pitch platform"}`, `<Toaster />` from `@/components/ui/sonner` for global toast notifications.
 
-### [page.tsx](./page.tsx)
-Exports `HomePage` default component. Client-side health dashboard polling `/api/health` on mount. Renders service cards for Frontend (always ok), Backend, Supabase via `StatusBadge` component. `HealthData` type: `status`, `frontend`, `backend`, `database`, `timestamp`. `getSummaryMessage` returns degradation guidance string based on downCount.
+**[page.tsx](./page.tsx)** — `HomePage()` rendering `/api/health` polling dashboard, displays `StatusBadge` for frontend/backend/database states (`ok`/`degraded`/`unreachable`), `getSummaryMessage()` generating diagnostic hints based on service counts.
 
 ## Subdirectories
 
-### [documents/](./documents/)
-Next.js route segment implementing `/documents` UI with async upload, polling, delete, and replace workflows. `DocumentsPage` client component manages document state, polling map (`POLL_INTERVAL_MS = 3000`, `POLL_TIMEOUT_MS = 5 * 60 * 1000`), and modal targets. Polls pending/processing documents, terminates on ready/error status.
+**[documents/](./documents/)** — Document upload/management UI with polling-based ingestion status tracking, purpose assignment (pitch vs. rag), delete/replace workflows.
 
-## Stack
+**[pitch/](./pitch/)** — Pitch viewer route mounting `PitchViewer` component with loading skeletons and error boundary for presentation content.
 
-- **Framework**: Next.js App Router
-- **Styling**: Tailwind CSS via custom properties, shadcn/ui component integration
-- **Fonts**: Geist (variable font), Inter (body font)
-- **State Management**: React useState for health polling, document state
-- **Notifications**: sonner `<Toaster />` for global toast notifications
+**[query/](./query/)** — Q&A interface route orchestrating `useQueryStream()` hook with `QueryInput`, `StreamingAnswer`, `CitationList` components for agentic code assistance.
 
-## Theme System Architecture
+## Theme Architecture
 
-Custom variant `dark` targets `.dark` class descendants via `@custom-variant dark (&:is(.dark *))`. Color tokens defined in both HSL (light mode default) and OKLCH (dark mode overrides) formats. Radius system derives 7 scales from single `--radius` base value (0.625rem).
+Light theme in `:root` and `@theme inline`, dark theme in `.dark` class. Color tokens: `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `destructive-foreground`, `border`, `input`, `ring`, `chart-1` through `chart-5`, `sidebar-*` variants. Radius system base `--radius: 0.625rem` with 0.6×/0.8×/1×/1.4×/1.8×/2.2×/2.6× scale. Typography via `--font-sans: var(--font-sans)` referencing external font definition.
 
-## File Relationships
+## Health Monitoring
 
-- `layout.tsx` imports `globals.css` at root, establishing theme tokens for all descendants
-- `page.tsx` consumes theme via shadcn/ui `Badge`, `Card` components (defined in `@/components/ui/`)
-- Health endpoint path `/api/health` resolved to `apps/web/app/api/health/route.ts`
-- `documents/page.tsx` calls `uploadDocument` from `@/lib/api-client` and polls document status
+`HomePage` polls `/api/health`, maps `HealthData` to service cards. Status badge colors: green ("Healthy"), yellow ("Degraded"), destructive ("Unreachable"). Diagnostic messages:
+- ≥2 unreachable: `"Multiple services are down. Run \`turbo dev\` and \`supabase start\` to start all services."`
+- Any unreachable/degraded: `"Some services are not responding. Check that all services are running."`
+- All ok: `"All systems operational"`
 
 ## Behavioral Contracts
 
-### Status Mapping
-- `StatusBadge` maps `ServiceStatus` → Badge variant: `'ok'` → green background, `'degraded'` → yellow background, `'unreachable'` → destructive variant
+**Health polling**: `/api/health` JSON endpoint returning `{status: 'healthy'|'degraded', frontend: 'ok', backend: 'ok'|'degraded'|'unreachable', database: 'ok'|'unreachable', timestamp: string}`. Error fallback sets `backend: 'unreachable', database: 'unreachable'`.
 
-### Health Response Schema
-```typescript
-{
-  status: 'healthy' | 'degraded',
-  frontend: 'ok',
-  backend: 'ok' | 'degraded' | 'unreachable',
-  database: 'ok' | 'unreachable',
-  timestamp: string
-}
-```
-
-### Degradation Guidance
-- `downCount >= 2`: "Multiple services are down. Run `turbo dev` and `supabase start`..."
-- `downCount > 0`: "Some services are not responding..."
-- `else`: "All systems operational"
-
-### Document Polling
-- **Polling interval**: `3000` ms
-- **Polling timeout**: `5 * 60 * 1000` ms
-- **Polled statuses**: `'pending'`, `'processing'`
-- **Terminal statuses**: `'ready'` (success toast), `'error'` (error toast)
+**Document polling** (via documents/page.tsx): `POLL_INTERVAL_MS = 3000`, `POLL_TIMEOUT_MS = 300000`, tracks `pending`/`processing` documents, stops on `ready`/`error` or timeout.

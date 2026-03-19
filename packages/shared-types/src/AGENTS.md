@@ -2,46 +2,30 @@
 
 # packages/shared-types/src
 
-Defines TypeScript interfaces for cross-service health monitoring in a monorepo with FastAPI backend and Next.js frontend.
+Defines TypeScript type contracts for health check responses used across frontend (Next.js) and backend (FastAPI) to ensure consistent system monitoring interfaces.
 
 ## Contents
 
-- **[index.ts](./index.ts)** — Exports `HealthResponse` (aggregated frontend/backend/database status with `'healthy' | 'degraded'` states) and `ApiHealthResponse` (backend service metadata with optional database connectivity flag).
-
-## Stack
-
-**Runtime:** TypeScript type definitions (no runtime code)  
-**Consumers:** `apps/web/app/api/health/route.ts`, `apps/api/app/api/v1/health.py`  
-**Build System:** Turbo monorepo with pnpm workspaces
+### [index.ts](./index.ts)
+Exports `HealthResponse` (aggregate frontend/backend/database status with 'healthy'|'degraded' overall state, ISO timestamp) and `ApiHealthResponse` (service-level metadata with version string, optional database status).
 
 ## API Surface
 
-```typescript
-export interface HealthResponse {
-  status: 'healthy' | 'degraded';
-  frontend: 'ok';
-  backend: 'ok' | 'degraded' | 'unreachable';
-  database: 'ok' | 'unreachable';
-  timestamp: string;
-}
-
-export interface ApiHealthResponse {
-  status: 'ok';
-  service: string;
-  version: string;
-  database?: 'ok' | 'unreachable';
-}
-```
-
-## Behavioral Contracts
+**Health Check Contracts:**
+- `HealthResponse` — client-side aggregate status consumed by `apps/web/app/api/health/route.ts`
+- `ApiHealthResponse` — backend service response produced by `apps/api/app/api/v1/health.py`
 
 **Status Enumerations:**
-- `HealthResponse.status`: `'healthy' | 'degraded'` (aggregated system state)
-- `HealthResponse.backend`: `'ok' | 'degraded' | 'unreachable'` (API reachability)
-- `HealthResponse.database`: `'ok' | 'unreachable'` (Supabase connectivity)
-- `ApiHealthResponse.status`: `'ok'` (literal type — backend always reports ok when reachable)
+- Frontend: `'ok'`
+- Backend: `'ok' | 'degraded' | 'unreachable'`
+- Database: `'ok' | 'unreachable'`
+- Overall: `'healthy' | 'degraded'`
 
-**Field Contracts:**
-- `HealthResponse.frontend`: always `'ok'` (Next.js API route running implies frontend healthy)
-- `HealthResponse.timestamp`: ISO 8601 string (`new Date().toISOString()`)
-- `ApiHealthResponse.database`: optional field present only when backend checks database connectivity
+## File Relationships
+
+Types flow unidirectionally:
+1. Backend emits `ApiHealthResponse` at `/api/v1/health`
+2. Frontend health route (`apps/web/app/api/health/route.ts`) transforms backend response into `HealthResponse`
+3. Web components consume `HealthResponse` for status rendering
+
+No runtime dependencies — pure type definitions for compile-time contract enforcement across workspace packages.

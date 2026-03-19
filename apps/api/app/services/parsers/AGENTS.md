@@ -2,46 +2,48 @@
 
 # parsers
 
-Converts uploaded documents (Excel, PDF, Markdown) into embedded node structures for semantic search by applying format-specific parsing, chunking, and LLM-based summarization.
+Converts uploaded document bytes into embedded LlamaIndex nodes through file-type-specific pipelines: excel_parser.py generates LLM summaries per worksheet, markdown_pipeline.py splits on headings, pdf_pipeline.py extracts pages via PyMuPDF, all producing 500-token chunks with text-embedding-3-small vectors.
 
 ## Contents
 
-### Format-Specific Parsers
+**[excel_parser.py](./excel_parser.py)** — `parse_excel(file_bytes: bytes) -> list[dict]` converts Excel workbooks into chunk dicts: gpt-4o-mini summarizes each non-empty sheet, embeds summary via text-embedding-3-small, stores `raw_data` (2D cell array) + row/col counts in metadata.
 
-**[excel_parser.py](./excel_parser.py)** — `parse_excel(file_bytes: bytes)` yields one chunk per worksheet with GPT-4o-mini-generated summaries of tabular data, text-embedding-3-small embeddings, and raw row data in metadata.
+**[markdown_pipeline.py](./markdown_pipeline.py)** — `run_markdown_pipeline(text: str) -> list[BaseNode]` uses `MarkdownNodeParser` (heading splits) → `SentenceSplitter(chunk_size=500, chunk_overlap=50)` → `OpenAIEmbedding(text-embedding-3-small)`.
 
-**[pdf_pipeline.py](./pdf_pipeline.py)** — `run_pdf_pipeline(file_bytes: bytes)` uses PyMuPDFReader to extract pages, SentenceSplitter for 500-token chunks with 50-token overlap, and OpenAIEmbedding to produce 1536-dim vectors.
+**[pdf_pipeline.py](./pdf_pipeline.py)** — `run_pdf_pipeline(file_bytes: bytes) -> list[BaseNode]` writes bytes to temp file, invokes `PyMuPDFReader`, splits pages via `SentenceSplitter(500, 50)`, embeds with text-embedding-3-small, attaches `page_label` metadata, guarantees temp file cleanup.
 
-**[markdown_pipeline.py](./markdown_pipeline.py)** — `run_markdown_pipeline(text: str)` chains MarkdownNodeParser (heading-based splits), SentenceSplitter (500-token chunks, 50-token overlap), and OpenAIEmbedding via IngestionPipeline.
+## Architecture
 
-## Data Flow
+**Common Output Format:** All pipelines return collections of LlamaIndex nodes/dicts containing `content` (text), `embedding` (1536-dim vector), `metadata` (source location), `token_count`. excel_parser.py returns raw dicts; markdown/pdf pipelines return `BaseNode` instances.
 
-1. **excel_parser.py**: `openpyxl.load_workbook` → row iteration → `_rows_to_text` formatting → GPT-4o-mini summarization via `_generate_summary` → manual chunk dict assembly with embedding
-2. **pdf_pipeline.py**: temp file write → PyMuPDFReader → SentenceSplitter → OpenAIEmbedding → LlamaIndex BaseNode objects with page_label metadata
-3. **markdown_pipeline.py**: text input → MarkdownNodeParser → SentenceSplitter → OpenAIEmbedding → BaseNode objects
+**Embedding Model:** All parsers use text-embedding-3-small via `OpenAIEmbedding`; excel_parser.py lazy-initializes `_embed_model` global to pick up runtime OPENAI_API_KEY.
 
-All parsers use OpenAI text-embedding-3-small for semantic search compatibility.
+**Chunking Strategy:** markdown/pdf use identical `SentenceSplitter(chunk_size=500, chunk_overlap=50)`; excel splits at worksheet boundaries, summarizes full sheets.
 
-## LLM Integration
+**External LLM Calls:** excel_parser.py invokes gpt-4o-mini for sheet summaries (max_tokens=1000, system prompt mandates "comprehensive" summaries for semantic search); markdown/pdf pipelines are embedding-only.
 
-**excel_parser.py** system prompt for table summarization:
-```
-Summarize this financial spreadsheet data in clear natural language. Include all key numbers, metrics, and relationships. Be comprehensive -- this summary will be used for semantic search.
-```
-GPT-4o-mini generates summaries with max_tokens=1000.
+## File Relationships
 
-## Metadata Schema
+**Consumed by:** [../ingestion.py](../ingestion.py) routes by `file_type` enum ("pdf", "excel", "markdown"), awaits parser output, passes nodes to `node_mapper.py` for Supabase chunk conversion. [../pipeline.py](../pipeline.py) orchestrates file_type detection → parser invocation → chunking → embedding.
 
-**Excel chunks** contain: `sheet_name`, `raw_data` (list[list[str]]), `row_count`, `col_count`, `token_count` (tiktoken-encoded), `section_number` (worksheet index), `chunk_type="table"`.
+**Shared Dependencies:** All parsers import llama_index primitives (`Document`, `IngestionPipeline`, `SentenceSplitter`, `OpenAIEmbedding`); excel_parser.py additionally requires openpyxl, tiktoken, openai.OpenAI client.
 
-**PDF/Markdown nodes** use LlamaIndex's BaseNode structure with `page_label` metadata and automatic chunking metadata from SentenceSplitter.
+## Behavioral Contracts
 
-## Dependencies
+**Excel Summary Prompt:** `"Summarize this financial spreadsheet data in clear natural language. Include all key numbers, metrics, and relationships. Be comprehensive -- this summary will be used for semantic search."`
 
-**Excel**: openpyxl (read_only=True, data_only=True), tiktoken (encoding_for_model), openai.OpenAI, llama_index.embeddings.OpenAIEmbedding
+**Excel Tab Format:** `_rows_to_text` produces `"1\tcell1\tcell2\n2\tcell3\tcell4"` (1-indexed row numbers, tab delimiters).
 
-**PDF**: PyMuPDFReader, tempfile for temp file management, os.unlink for cleanup
+**Chunk Type Enum:** excel_parser.py sets `chunk_type: "table"`; markdown/pdf derive from LlamaIndex node types.
 
-**Markdown**: MarkdownNodeParser, SentenceSplitter, OpenAIEmbedding via IngestionPipeline
+**Metadata Keys:** excel chunks include `sheet_name`, `raw_data`, `row_count`, `col_count`; PDF nodes carry `page_label`.
 
-All parsers share chunk_size=500, chunk_overlap=50 configuration for sentence splitting.
+**Token Counting:** excel_parser.py uses tiktoken with text-embedding-3-small encoding; markdown/pdf chunking implicitly tracks via `SentenceSplitter` token window.
+
+## Resource Management
+
+**PDF Temp Files:** pdf_pipeline.py creates `tempfile.mkstemp(suffix=".pdf")`, guarantees `os.unlink` in finally block (PyMuPDFReader requires disk path).
+
+**Excel Read-Only Mode:** openpyxl invoked with `read_only=True, data_only=True` for memory efficiency.
+
+**Lazy Embedding Model:** excel_parser.py `_get_embed_model()` defers OpenAIEmbedding instantiation until first call to capture environment-injected API keys.
