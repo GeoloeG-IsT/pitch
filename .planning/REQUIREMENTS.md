@@ -29,9 +29,9 @@ Requirements for the PoC demo. Each maps to roadmap phases.
 
 ### Trust & Validation
 
-- [ ] **TRUST-01**: AI responses display confidence scores with visual indicators (green/yellow/red)
-- [ ] **TRUST-02**: Low-confidence answers queue for founder review before being visible to investors
-- [ ] **TRUST-03**: Founder can approve, edit, or reject queued answers from a validation dashboard
+- [x] **TRUST-01**: AI responses display confidence scores with visual indicators (green/yellow/red)
+- [x] **TRUST-02**: Low-confidence answers queue for founder review before being visible to investors
+- [x] **TRUST-03**: Founder can approve, edit, or reject queued answers from a validation dashboard
 
 ### Auth & Security
 
@@ -129,9 +129,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QA-02 | Phase 4 | Complete |
 | QA-03 | Phase 3 | Complete |
 | QA-04 | Phase 3 | Complete |
-| TRUST-01 | Phase 5 | Pending |
-| TRUST-02 | Phase 5 | Pending |
-| TRUST-03 | Phase 5 | Pending |
+| TRUST-01 | Phase 5 | Complete |
+| TRUST-02 | Phase 5 | Complete |
+| TRUST-03 | Phase 5 | Complete |
 | AUTH-01 | Phase 6 | Pending |
 | AUTH-02 | Phase 6 | Pending |
 | AUTH-03 | Phase 6 | Pending |

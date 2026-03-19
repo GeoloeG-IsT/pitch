@@ -10,8 +10,8 @@ progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 13
-  completed_plans: 10
-  percent: 100
+  completed_plans: 11
+  percent: 85
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Investors can ask natural language questions about any aspect of a startup's pitch and get accurate, source-cited answers instantly, without the founder needing to be in the room.
-**Current focus:** Phase 4 Smart Document Viewer complete. All 3 plans finished.
+**Current focus:** Phase 5 Trust & HITL Validation. Plan 01 complete -- confidence scoring and review pipeline.
 
 ## Current Position
 
-Phase: 4 of 8 (Smart Document Viewer) -- COMPLETE
-Plan: 3 of 3 in current phase (04-03 complete)
-Status: Phase 4 complete, ready for Phase 5
-Last activity: 2026-03-19 -- Completed 04-03 (Inline Q&A Panel)
+Phase: 5 of 8 (Trust & HITL Validation)
+Plan: 1 of 3 in current phase (05-01 complete)
+Status: Executing Phase 5
+Last activity: 2026-03-19 -- Completed 05-01 (Backend Confidence & Review Pipeline)
 
 Progress: [██████████] 100%
 
@@ -59,6 +59,7 @@ Progress: [██████████] 100%
 | Phase 04 P01 | 6min | 2 tasks | 11 files |
 | Phase 04 P02 | 3min | 2 tasks | 12 files |
 | Phase 04 P03 | 8min | 3 tasks | 6 files |
+| Phase 05 P01 | 7min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,10 @@ Recent decisions affecting current work:
 - 04-03: Custom fixed panel instead of Sheet for Q&A (avoids modal scroll-lock, keeps content scrollable)
 - 04-03: Single useQueryStream instance with message snapshot pattern for conversation history
 - 04-03: Citation click scrolls viewer with 2s ring-primary/30 highlight per UI-SPEC Animation Contract
+- 05-01: Confidence weights: retrieval 0.40, LLM 0.35, coverage 0.25
+- 05-01: Confidence tiers: >=70 high, >=40 moderate, <40 low
+- 05-01: CONFIDENCE: line in system prompt, stripped via replace_answer WebSocket message
+- 05-01: Low-confidence answers stored as status=queued, review_status=pending_review
 
 ### Pending Todos
 
@@ -112,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T20:19:00.511Z
-Stopped at: Phase 5 plans verified
-Resume file: .planning/phases/05-trust-hitl-validation/05-01-PLAN.md
+Last session: 2026-03-19T20:31:00Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: .planning/phases/05-trust-hitl-validation/05-02-PLAN.md
