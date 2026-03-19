@@ -112,11 +112,13 @@ Plans:
   2. Founder and investor roles have different permissions -- founders see dashboard/management views, investors see the pitch viewer
   3. Founder can generate a secure shareable link that gives an investor access to the pitch
   4. Founder can revoke an investor's access, immediately preventing further viewing
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [ ] 06-01-PLAN.md -- Supabase client utilities, share_tokens DB migration, FastAPI JWT auth dependency
+- [ ] 06-02-PLAN.md -- Login/signup pages, OAuth callback, middleware route protection, role-aware SiteNav
+- [ ] 06-03-PLAN.md -- Migrate API endpoints from DEMO_USER_ID to JWT auth, share token CRUD endpoints
+- [ ] 06-04-PLAN.md -- Access management UI (share link generator, email invite, access table, revocation)
 
 ### Phase 7: Analytics
 **Goal**: Founders have visibility into investor engagement -- who viewed, how long, which sections, what questions, and which investors show the strongest signals
@@ -159,6 +161,6 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | 3. RAG Query Engine | 2/2 | Complete   | 2026-03-19 |
 | 4. Smart Document Viewer | 3/3 | Complete   | 2026-03-19 |
 | 5. Trust + HITL Validation | 0/3 | Not started | - |
-| 6. Auth + Access Control | 0/0 | Not started | - |
+| 6. Auth + Access Control | 0/4 | Not started | - |
 | 7. Analytics | 0/0 | Not started | - |
 | 8. Live Pitch Mode | 0/0 | Not started | - |
