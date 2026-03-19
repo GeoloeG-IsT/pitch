@@ -41,6 +41,16 @@ export async function getDocument(id: string): Promise<Document> {
   return res.json();
 }
 
+export async function updateDocumentPurpose(id: string, purpose: "pitch" | "rag"): Promise<Document> {
+  const res = await fetch(`${API_BASE}/documents/${id}/purpose`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ purpose }),
+  });
+  if (!res.ok) throw new Error(`Failed to update purpose`);
+  return res.json();
+}
+
 export async function deleteDocument(id: string): Promise<void> {
   const res = await fetch(`${API_BASE}/documents/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`Delete failed`);

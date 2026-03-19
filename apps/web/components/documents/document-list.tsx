@@ -9,9 +9,10 @@ interface DocumentListProps {
   loading: boolean;
   onDelete: (id: string) => void;
   onReplace: (id: string, file: File) => void;
+  onPurposeChange: (id: string, purpose: "pitch" | "rag") => void;
 }
 
-export function DocumentList({ documents, loading, onDelete, onReplace }: DocumentListProps) {
+export function DocumentList({ documents, loading, onDelete, onReplace, onPurposeChange }: DocumentListProps) {
   if (loading) {
     return (
       <div className="flex flex-col gap-2">
@@ -44,6 +45,7 @@ export function DocumentList({ documents, loading, onDelete, onReplace }: Docume
           document={doc}
           onDelete={onDelete}
           onReplace={onReplace}
+          onPurposeChange={onPurposeChange}
         />
       ))}
     </div>

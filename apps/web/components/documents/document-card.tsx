@@ -18,6 +18,7 @@ interface DocumentCardProps {
   document: Document;
   onDelete: (id: string) => void;
   onReplace: (id: string, file: File) => void;
+  onPurposeChange: (id: string, purpose: "pitch" | "rag") => void;
 }
 
 function FileIcon({ fileType }: { fileType: string }) {
@@ -69,7 +70,7 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-export function DocumentCard({ document, onDelete, onReplace }: DocumentCardProps) {
+export function DocumentCard({ document, onDelete, onReplace, onPurposeChange }: DocumentCardProps) {
   const replaceInputRef = useRef<HTMLInputElement>(null);
 
   const handleReplaceClick = useCallback(() => {
@@ -99,8 +100,18 @@ export function DocumentCard({ document, onDelete, onReplace }: DocumentCardProp
             {formatDate(document.created_at)}
           </span>
         </div>
-        <div className="mt-1">
+        <div className="mt-1 flex items-center gap-2">
           <StatusBadge status={document.status} chunkCount={document.chunk_count} />
+          <button
+            type="button"
+            onClick={() =>
+              onPurposeChange(document.id, document.purpose === "pitch" ? "rag" : "pitch")
+            }
+            className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium cursor-pointer transition-colors border border-border hover:bg-accent"
+            title={`Currently: ${document.purpose === "pitch" ? "Pitch document" : "RAG only"}. Click to toggle.`}
+          >
+            {document.purpose === "pitch" ? "Pitch" : "RAG"}
+          </button>
         </div>
       </div>
 

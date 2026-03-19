@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import os
 
+from pydantic import BaseModel
+
 from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
 
 from app.core.supabase import get_service_client
@@ -181,6 +183,44 @@ async def get_document(doc_id: str):
         .execute()
     )
     return _row_to_response(row, chunk_count=chunk_result.count)
+
+
+class PurposeUpdate(BaseModel):
+    purpose: str
+
+
+@router.patch("/documents/{doc_id}/purpose")
+async def update_document_purpose(doc_id: str, body: PurposeUpdate):
+    """Update a document's purpose (pitch or rag)."""
+    if body.purpose not in ("pitch", "rag"):
+        raise HTTPException(status_code=400, detail="purpose must be 'pitch' or 'rag'")
+
+    client = get_service_client()
+
+    result = (
+        client.table("documents")
+        .select("id")
+        .eq("id", doc_id)
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    update_result = (
+        client.table("documents")
+        .update({"purpose": body.purpose})
+        .eq("id", doc_id)
+        .execute()
+    )
+
+    chunk_result = (
+        client.table("chunks")
+        .select("id", count="exact")
+        .eq("document_id", doc_id)
+        .execute()
+    )
+
+    return _row_to_response(update_result.data[0], chunk_count=chunk_result.count)
 
 
 @router.delete("/documents/{doc_id}", status_code=204)

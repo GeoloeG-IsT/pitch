@@ -9,6 +9,7 @@ import {
   getDocument,
   deleteDocument,
   replaceDocument,
+  updateDocumentPurpose,
 } from '@/lib/api';
 import { UploadZone } from '@/components/documents/upload-zone';
 import { DocumentList } from '@/components/documents/document-list';
@@ -142,6 +143,17 @@ export default function DocumentsPage() {
     }
   }, [deleteTarget]);
 
+  // Purpose handler
+  const handlePurposeChange = useCallback(async (id: string, purpose: "pitch" | "rag") => {
+    try {
+      const updated = await updateDocumentPurpose(id, purpose);
+      setDocuments((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+      toast(`Marked as ${purpose === "pitch" ? "Pitch" : "RAG"}`);
+    } catch {
+      toast.error('Failed to update document purpose.');
+    }
+  }, []);
+
   // Replace handlers
   const handleReplaceRequest = useCallback(
     (id: string, file: File) => {
@@ -197,6 +209,7 @@ export default function DocumentsPage() {
             loading={loading}
             onDelete={handleDeleteRequest}
             onReplace={handleReplaceRequest}
+            onPurposeChange={handlePurposeChange}
           />
         </div>
       </div>
