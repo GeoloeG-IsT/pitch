@@ -47,14 +47,16 @@ Exceptions: none
 
 ## Typography
 
-Consistent with Phase 2 document page patterns (`text-[28px]`, `text-xl`, body).
+Consistent with Phase 2 document page patterns (`text-[28px]`, `text-xl`, body). Two weights only: 400 (regular) for body-level text and 600 (semibold) for headings.
 
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
 | Body | 16px | 400 (regular) | 1.5 | Streamed answer text, input placeholder |
-| Label | 14px | 500 (medium) | 1.4 | Citation tags, status labels, section metadata |
+| Label | 14px | 400 (regular) | 1.4 | Citation tags, status labels, section metadata |
 | Heading | 20px | 600 (semibold) | 1.2 | "Sources" section heading, subheadings |
 | Display | 28px | 600 (semibold) | 1.2 | Page title ("Ask a Question") |
+
+Label is differentiated from Body by its smaller size (14px vs 16px), not by weight. This keeps the weight palette to exactly two values and avoids visual noise.
 
 Source: Existing patterns from `apps/web/app/documents/page.tsx` (text-[28px] font-semibold, text-xl font-semibold)
 
@@ -72,7 +74,7 @@ Uses existing shadcn neutral theme tokens from `globals.css`. No new colors intr
 | Destructive | `var(--color-destructive)` hsl(0 84.2% 60.2%) | Error state indicator, error status badge |
 
 Accent reserved for:
-- "Ask" submit button (primary action)
+- "Ask Question" submit button (primary action)
 - Text input focus ring
 - Streaming cursor/caret indicator
 - Active WebSocket connection indicator (status dot)
@@ -81,11 +83,15 @@ Accent reserved for:
 
 ## Component Inventory
 
+### Primary Focal Point
+
+**QueryInput** is the primary focal point of this page. It is the first interactive element the user encounters and the single entry point for all RAG queries. It sits at the top of the content area, visually anchored by the Display-sized page title above it and the answer area below it. The submit button within QueryInput uses accent color to draw attention.
+
 ### New Components (this phase)
 
 | Component | shadcn Base | Purpose |
 |-----------|-------------|---------|
-| QueryInput | none (custom) | Text input with submit button for asking questions |
+| QueryInput | none (custom) | Text input with submit button for asking questions. Primary focal point of the page. |
 | StreamingAnswer | none (custom) | Renders tokens as they arrive, with typing cursor |
 | CitationBadge | Badge (existing) | Inline citation tag like "[Pitch Deck, Market Size]" |
 | CitationList | Card (existing) | Expandable "Sources" section with full citation details |
@@ -98,7 +104,7 @@ Accent reserved for:
 | Card | `components/ui/card.tsx` | Citation detail cards in Sources section |
 | Badge | `components/ui/badge.tsx` | Citation inline tags, status indicators |
 | Skeleton | `components/ui/skeleton.tsx` | Loading skeleton for answer area during retrieval |
-| Button | `components/ui/button.tsx` | Submit button, "Ask" CTA |
+| Button | `components/ui/button.tsx` | Submit button, "Ask Question" CTA |
 | Separator | `components/ui/separator.tsx` | Between answer body and Sources section |
 
 ### New shadcn Components to Install
@@ -157,8 +163,9 @@ cd apps/web && npx shadcn@latest add collapsible input textarea
 |  [Display] Ask a Question                   [28px]|
 |                                                    |
 |  +----------------------------------------------+ |
-|  | [QueryInput]                                  | |
-|  | "What is the total addressable market?"  [Ask]| |
+|  | [QueryInput] ** PRIMARY FOCAL POINT **       | |
+|  | "What is the total addressable market?"      | |
+|  |                              [Ask Question]  | |
 |  +----------------------------------------------+ |
 |                                                    |
 |  [xl gap: 32px]                                    |
@@ -193,7 +200,7 @@ cd apps/web && npx shadcn@latest add collapsible input textarea
 
 | Element | Copy |
 |---------|------|
-| Primary CTA | "Ask" (button label next to input) |
+| Primary CTA | "Ask Question" (button label next to input) |
 | Page title | "Ask a Question" |
 | Input placeholder | "Ask anything about the pitch materials..." |
 | Empty state heading | "No questions yet" |
