@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 6 plans verified
-last_updated: "2026-03-19T22:10:28.468Z"
-last_activity: 2026-03-19 -- Completed 05-03 (Founder Validation Dashboard)
+status: in-progress
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-19T22:16:20.164Z"
+last_activity: 2026-03-19 -- Completed 06-01 (Auth Foundation)
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 17
-  completed_plans: 13
-  percent: 100
+  completed_plans: 14
+  percent: 82
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Investors can ask natural language questions about any aspect of a startup's pitch and get accurate, source-cited answers instantly, without the founder needing to be in the room.
-**Current focus:** Phase 5 Trust & HITL Validation complete. All 3 plans done -- confidence scoring, investor badges, founder dashboard.
+**Current focus:** Phase 6 Auth & Access Control in progress. Plan 1 of 4 complete -- auth foundation (Supabase SSR clients, JWT dependency, share_tokens table).
 
 ## Current Position
 
-Phase: 5 of 8 (Trust & HITL Validation) -- COMPLETE
-Plan: 3 of 3 in current phase (05-03 complete)
-Status: Phase 5 Complete
-Last activity: 2026-03-19 -- Completed 05-03 (Founder Validation Dashboard)
+Phase: 6 of 8 (Auth & Access Control) -- IN PROGRESS
+Plan: 1 of 4 in current phase (06-01 complete)
+Status: Executing Phase 6
+Last activity: 2026-03-19 -- Completed 06-01 (Auth Foundation)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 82%
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [██████████] 100%
 | Phase 05 P01 | 7min | 2 tasks | 11 files |
 | Phase 05 P02 | 3min | 2 tasks | 9 files |
 | Phase 05 P03 | 4min | 2 tasks | 12 files |
+| Phase 06 P01 | 3min | 4 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -112,6 +113,9 @@ Recent decisions affecting current work:
 - [Phase 05]: SiteNav as separate client component (layout.tsx is server component)
 - [Phase 05]: PendingCountBadge polls every 30s via setInterval (no WebSocket needed for count)
 - [Phase 05]: fetchReviewHistory merges three status-filtered API calls client-side
+- 06-01: Migration numbered 00006 (not 00003) because 00002-00005 already existed
+- 06-01: Three-client Supabase SSR pattern: browser, server (cookies), middleware (getUser)
+- 06-01: FastAPI JWT auth via PyJWT with HS256 + authenticated audience
 
 ### Pending Todos
 
@@ -125,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T22:10:28.463Z
-Stopped at: Phase 6 plans verified
-Resume file: .planning/phases/06-auth-access-control/06-01-PLAN.md
+Last session: 2026-03-19T22:16:00Z
+Stopped at: Completed 06-01-PLAN.md
+Resume file: .planning/phases/06-auth-access-control/06-02-PLAN.md
