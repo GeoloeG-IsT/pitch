@@ -17,7 +17,7 @@ export function PitchViewer() {
   const [data, setData] = useState<PitchResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { activeId, handleInView } = useActiveSection();
+  const { activeId, handleInView, forceActive } = useActiveSection();
   const [tocOpen, setTocOpen] = useState(false);
   const [tocCollapsed, setTocCollapsed] = useState(false);
   const [qaOpen, setQaOpen] = useState(false);
@@ -56,6 +56,7 @@ export function PitchViewer() {
   const scrollToSection = useCallback((id: string) => {
     const el = document.getElementById(`section-${id}`);
     if (el) {
+      forceActive(id);
       const headerOffset = 56 + 16; // h-14 (56px) + 16px breathing room
       const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
       window.scrollTo({ top, behavior: "smooth" });
@@ -63,7 +64,7 @@ export function PitchViewer() {
       el.classList.add("ring-2", "ring-primary/30");
       setTimeout(() => el.classList.remove("ring-2", "ring-primary/30"), 2000);
     }
-  }, []);
+  }, [forceActive]);
 
   if (loading) {
     return (
@@ -151,7 +152,7 @@ export function PitchViewer() {
         />
         <main
           className={cn(
-            "relative flex-1 py-16 px-4 lg:px-8 transition-[padding] duration-300",
+            "relative flex-1 pt-16 pb-[80vh] px-4 lg:px-8 transition-[padding] duration-300",
             qaOpen && "lg:pr-[460px]"
           )}
         >
