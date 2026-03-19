@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 06-01-PLAN.md
+stopped_at: Completed 06-02-PLAN.md
 last_updated: "2026-03-19T22:16:20.164Z"
 last_activity: 2026-03-19 -- Completed 06-01 (Auth Foundation)
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 17
-  completed_plans: 14
-  percent: 82
+  completed_plans: 15
+  percent: 88
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Investors can ask natural language questions about any aspect of a startup's pitch and get accurate, source-cited answers instantly, without the founder needing to be in the room.
-**Current focus:** Phase 6 Auth & Access Control in progress. Plan 1 of 4 complete -- auth foundation (Supabase SSR clients, JWT dependency, share_tokens table).
+**Current focus:** Phase 6 Auth & Access Control in progress. Plan 2 of 4 complete -- auth UI with login/signup pages, middleware route protection, role-aware SiteNav.
 
 ## Current Position
 
 Phase: 6 of 8 (Auth & Access Control) -- IN PROGRESS
-Plan: 1 of 4 in current phase (06-01 complete)
+Plan: 2 of 4 in current phase (06-02 complete)
 Status: Executing Phase 6
-Last activity: 2026-03-19 -- Completed 06-01 (Auth Foundation)
+Last activity: 2026-03-19 -- Completed 06-02 (Auth UI & Route Protection)
 
-Progress: [████████░░] 82%
+Progress: [█████████░] 88%
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [████████░░] 82%
 | Phase 05 P02 | 3min | 2 tasks | 9 files |
 | Phase 05 P03 | 4min | 2 tasks | 12 files |
 | Phase 06 P01 | 3min | 4 tasks | 10 files |
+| Phase 06 P02 | 6min | 4 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -116,6 +117,9 @@ Recent decisions affecting current work:
 - 06-01: Migration numbered 00006 (not 00003) because 00002-00005 already existed
 - 06-01: Three-client Supabase SSR pattern: browser, server (cookies), middleware (getUser)
 - 06-01: FastAPI JWT auth via PyJWT with HS256 + authenticated audience
+- 06-02: useActionState (React 19) for login/signup form state management
+- 06-02: base-ui render prop for DropdownMenuTrigger (not asChild) per base-nova pattern
+- 06-02: Role fetched from public.users table in middleware (not JWT claims) for PoC
 
 ### Pending Todos
 
@@ -129,6 +133,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T22:16:00Z
-Stopped at: Completed 06-01-PLAN.md
-Resume file: .planning/phases/06-auth-access-control/06-02-PLAN.md
+Last session: 2026-03-19T22:24:00Z
+Stopped at: Completed 06-02-PLAN.md
+Resume file: .planning/phases/06-auth-access-control/06-03-PLAN.md
