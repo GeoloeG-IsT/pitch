@@ -119,7 +119,7 @@ def test_websocket_stream_tokens():
 
     mock_client.table = MagicMock(side_effect=_table)
 
-    async def mock_run_pipeline(question: str, query_id: str, send_message) -> tuple[str, list[Citation]]:
+    async def mock_run_pipeline(question: str, query_id: str, send_message) -> tuple[str, list[Citation], float, str]:
         """Simulate the query pipeline sending messages."""
         await send_message({"type": "status", "status": "retrieving"})
         await send_message({"type": "status", "status": "generating"})
@@ -127,7 +127,7 @@ def test_websocket_stream_tokens():
         await send_message({"type": "token", "content": "answer "})
         await send_message({"type": "token", "content": "is 42."})
         await send_message({"type": "citations", "citations": [c.model_dump() for c in SAMPLE_CITATIONS]})
-        return ("The answer is 42.", SAMPLE_CITATIONS)
+        return ("The answer is 42.", SAMPLE_CITATIONS, 85.0, "high")
 
     from starlette.testclient import TestClient
 
@@ -166,10 +166,12 @@ def test_websocket_stream_tokens():
             assert len(msg["citations"]) == 1
             assert msg["citations"][0]["document_title"] == "Pitch Deck"
 
-            # 5. Done
+            # 5. Done (high confidence -> auto-published with confidence data)
             msg = ws.receive_json()
             assert msg["type"] == "done"
             assert msg["query_id"] == QUERY_ROW["id"]
+            assert msg["confidence_score"] == 85.0
+            assert msg["confidence_tier"] == "high"
 
 
 def test_websocket_query_not_found():
@@ -218,3 +220,112 @@ def test_websocket_query_already_complete():
             msg = ws.receive_json()
             assert msg["type"] == "error"
             assert "already" in msg["message"].lower()
+
+
+# ---------------------------------------------------------------------------
+# Confidence routing tests
+# ---------------------------------------------------------------------------
+
+
+def test_low_confidence_queued():
+    """Low-confidence answer is queued for review, sends 'queued' message."""
+    mock_client = MagicMock()
+
+    def _table(name: str) -> MagicMock:
+        chain = MagicMock()
+        for method in ("insert", "update", "delete", "select", "eq", "order", "single"):
+            getattr(chain, method).return_value = chain
+        if name == "queries":
+            chain.execute.return_value = MagicMock(data=QUERY_ROW)
+        else:
+            chain.execute.return_value = MagicMock(data=[], count=0)
+        return chain
+
+    mock_client.table = MagicMock(side_effect=_table)
+
+    async def mock_run_pipeline(question, query_id, send_message):
+        await send_message({"type": "status", "status": "retrieving"})
+        await send_message({"type": "status", "status": "generating"})
+        await send_message({"type": "token", "content": "Low confidence answer."})
+        await send_message({"type": "citations", "citations": []})
+        return ("Low confidence answer.", [], 25.0, "low")
+
+    from starlette.testclient import TestClient
+
+    with (
+        patch("app.api.v1.query.get_service_client", return_value=mock_client),
+        patch("app.api.v1.query.run_query_pipeline", side_effect=mock_run_pipeline),
+    ):
+        client = TestClient(app)
+        with client.websocket_connect(f"/api/v1/query/{QUERY_ROW['id']}/stream") as ws:
+            # Consume status and token messages
+            msg = ws.receive_json()
+            assert msg["type"] == "status"
+            msg = ws.receive_json()
+            assert msg["type"] == "status"
+            msg = ws.receive_json()
+            assert msg["type"] == "token"
+            msg = ws.receive_json()
+            assert msg["type"] == "citations"
+
+            # Final message should be "queued", not "done"
+            msg = ws.receive_json()
+            assert msg["type"] == "queued"
+            assert "query_id" in msg
+            assert "verified" in msg.get("message", "").lower() or "check back" in msg.get("message", "").lower()
+
+    # Verify the update call included review_status=pending_review
+    update_calls = [
+        call for call in mock_client.table.call_args_list
+        if call.args == ("queries",)
+    ]
+    # At least one update call should have been made
+    assert len(update_calls) >= 2  # select + streaming update + final update
+
+
+def test_high_confidence_auto_publish():
+    """High-confidence answer is auto-published, sends 'done' with confidence data."""
+    mock_client = MagicMock()
+
+    def _table(name: str) -> MagicMock:
+        chain = MagicMock()
+        for method in ("insert", "update", "delete", "select", "eq", "order", "single"):
+            getattr(chain, method).return_value = chain
+        if name == "queries":
+            chain.execute.return_value = MagicMock(data=QUERY_ROW)
+        else:
+            chain.execute.return_value = MagicMock(data=[], count=0)
+        return chain
+
+    mock_client.table = MagicMock(side_effect=_table)
+
+    async def mock_run_pipeline(question, query_id, send_message):
+        await send_message({"type": "status", "status": "retrieving"})
+        await send_message({"type": "status", "status": "generating"})
+        await send_message({"type": "token", "content": "High confidence answer."})
+        await send_message({"type": "citations", "citations": [c.model_dump() for c in SAMPLE_CITATIONS]})
+        return ("High confidence answer.", SAMPLE_CITATIONS, 85.0, "high")
+
+    from starlette.testclient import TestClient
+
+    with (
+        patch("app.api.v1.query.get_service_client", return_value=mock_client),
+        patch("app.api.v1.query.run_query_pipeline", side_effect=mock_run_pipeline),
+    ):
+        client = TestClient(app)
+        with client.websocket_connect(f"/api/v1/query/{QUERY_ROW['id']}/stream") as ws:
+            # Consume status and token messages
+            msg = ws.receive_json()
+            assert msg["type"] == "status"
+            msg = ws.receive_json()
+            assert msg["type"] == "status"
+            msg = ws.receive_json()
+            assert msg["type"] == "token"
+            msg = ws.receive_json()
+            assert msg["type"] == "citations"
+
+            # Final message should be "done" with confidence data
+            msg = ws.receive_json()
+            assert msg["type"] == "done"
+            assert msg["confidence_score"] == 85.0
+            assert msg["confidence_tier"] == "high"

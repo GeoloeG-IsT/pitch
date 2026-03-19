@@ -65,20 +65,46 @@ async def stream_query(websocket: WebSocket, query_id: str):
         await websocket.send_json(msg)
 
     try:
-        answer, citations = await run_query_pipeline(
+        answer, citations, confidence_score, confidence_tier = await run_query_pipeline(
             question=query_row["question"],
             query_id=query_id,
             send_message=send_message,
         )
 
-        # Persist answer and citations to database
-        client.table("queries").update({
-            "answer": answer,
-            "citations": [c.model_dump() for c in citations],
-            "status": "complete",
-        }).eq("id", query_id).execute()
+        # Determine routing based on confidence tier
+        if confidence_tier == "low":
+            # Low-confidence: queue for founder review
+            client.table("queries").update({
+                "answer": answer,
+                "citations": [c.model_dump() for c in citations],
+                "status": "queued",
+                "confidence_score": confidence_score,
+                "confidence_tier": confidence_tier,
+                "review_status": "pending_review",
+            }).eq("id", query_id).execute()
 
-        await websocket.send_json({"type": "done", "query_id": query_id})
+            await websocket.send_json({
+                "type": "queued",
+                "message": "This answer is being verified by the team -- check back shortly.",
+                "query_id": query_id,
+            })
+        else:
+            # High/moderate: auto-publish with confidence data
+            client.table("queries").update({
+                "answer": answer,
+                "citations": [c.model_dump() for c in citations],
+                "status": "complete",
+                "confidence_score": confidence_score,
+                "confidence_tier": confidence_tier,
+                "review_status": "auto_published",
+            }).eq("id", query_id).execute()
+
+            await websocket.send_json({
+                "type": "done",
+                "query_id": query_id,
+                "confidence_score": confidence_score,
+                "confidence_tier": confidence_tier,
+            })
 
     except WebSocketDisconnect:
         logger.info("Client disconnected from query %s", query_id)

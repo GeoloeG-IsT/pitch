@@ -9,6 +9,12 @@ from openai import AsyncOpenAI
 from app.core.config import settings
 from app.core.supabase import get_service_client
 from app.models.query import Citation
+from app.services.confidence import (
+    compute_confidence_score,
+    compute_coverage_signal,
+    compute_retrieval_signal,
+    extract_llm_confidence,
+)
 from app.services.retrieval import retrieve_and_rerank
 
 TOKEN_BUDGET = 6000
@@ -28,6 +34,19 @@ SOURCE MATERIALS:
 {context}
 
 Answer the following question:"""
+
+CONFIDENCE_SUFFIX = """
+
+After your answer, on a new line, output EXACTLY:
+CONFIDENCE: [0.0-1.0]
+where the number reflects how well the source materials support your answer.
+- 1.0 = sources directly and completely answer the question
+- 0.7 = sources mostly answer the question with minor gaps
+- 0.4 = sources partially relevant but significant gaps
+- 0.1 = sources barely relevant, answer is mostly inference
+- 0.0 = no relevant information in sources
+
+This confidence line will be removed before showing to users."""
 
 
 def build_context_prompt(
@@ -99,8 +118,11 @@ def extract_citations(
 
 async def run_query_pipeline(
     question: str, query_id: str, send_message: Callable
-) -> tuple[str, list[Citation]]:
-    """Orchestrate the full RAG pipeline: retrieve, build prompt, stream LLM."""
+) -> tuple[str, list[Citation], float, str]:
+    """Orchestrate the full RAG pipeline: retrieve, build prompt, stream LLM.
+
+    Returns (clean_answer, citations, confidence_score, confidence_tier).
+    """
     try:
         # 1. Retrieve and rerank chunks
         await send_message({"type": "status", "status": "retrieving"})
@@ -110,7 +132,7 @@ async def run_query_pipeline(
             no_docs_msg = "I don't have any source documents to reference yet. Please upload documents first, then try your question again."
             await send_message({"type": "token", "content": no_docs_msg})
             await send_message({"type": "citations", "citations": []})
-            return (no_docs_msg, [])
+            return (no_docs_msg, [], 0.0, "low")
 
         # 2. Look up document titles
         doc_ids = list(set(str(c["document_id"]) for c in chunks))
@@ -120,11 +142,16 @@ async def run_query_pipeline(
         context = build_context_prompt(chunks, doc_titles)
         citations = extract_citations(chunks, doc_titles)
 
-        # 4. Stream LLM response
+        # 3b. Compute retrieval and coverage signals early
+        retrieval_signal = compute_retrieval_signal(chunks)
+        coverage_signal = compute_coverage_signal(question, chunks, doc_titles)
+
+        # 4. Stream LLM response (with confidence suffix appended to prompt)
         await send_message({"type": "status", "status": "generating"})
 
+        system_content = SYSTEM_PROMPT.format(context=context) + CONFIDENCE_SUFFIX
         messages = [
-            {"role": "system", "content": SYSTEM_PROMPT.format(context=context)},
+            {"role": "system", "content": system_content},
             {"role": "user", "content": question},
         ]
 
@@ -143,12 +170,22 @@ async def run_query_pipeline(
                 full_response += delta
                 await send_message({"type": "token", "content": delta})
 
-        # 5. Send citations
+        # 5. Extract LLM confidence and compute final score
+        clean_answer, llm_signal = extract_llm_confidence(full_response)
+        confidence_score, confidence_tier = compute_confidence_score(
+            retrieval_signal, llm_signal, coverage_signal
+        )
+
+        # 6. Send clean answer replacement (strips CONFIDENCE: line from stream)
+        if clean_answer != full_response:
+            await send_message({"type": "replace_answer", "answer": clean_answer})
+
+        # 7. Send citations
         await send_message(
             {"type": "citations", "citations": [c.model_dump() for c in citations]}
         )
 
-        return (full_response, citations)
+        return (clean_answer, citations, confidence_score, confidence_tier)
 
     except Exception as e:
         await send_message({"type": "error", "message": str(e)})
