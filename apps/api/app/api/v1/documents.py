@@ -74,20 +74,49 @@ async def upload_document(
         title = os.path.splitext(file.filename)[0]
 
     client = get_service_client()
-    result = (
+
+    # Check for existing document with the same filename — replace instead of duplicating
+    existing = (
         client.table("documents")
-        .insert(
-            {
-                "user_id": DEMO_USER_ID,
-                "title": title,
-                "file_name": file.filename,
-                "file_type": file_type,
-                "file_size_bytes": len(file_bytes),
-                "status": "pending",
-            }
-        )
+        .select("id")
+        .eq("user_id", DEMO_USER_ID)
+        .eq("file_name", file.filename)
         .execute()
     )
+
+    if existing.data:
+        # Re-use existing document row: delete old chunks and re-ingest
+        doc_id = existing.data[0]["id"]
+        await delete_document_chunks(doc_id)
+        result = (
+            client.table("documents")
+            .update(
+                {
+                    "title": title,
+                    "file_type": file_type,
+                    "file_size_bytes": len(file_bytes),
+                    "status": "pending",
+                    "metadata": {},
+                }
+            )
+            .eq("id", doc_id)
+            .execute()
+        )
+    else:
+        result = (
+            client.table("documents")
+            .insert(
+                {
+                    "user_id": DEMO_USER_ID,
+                    "title": title,
+                    "file_name": file.filename,
+                    "file_type": file_type,
+                    "file_size_bytes": len(file_bytes),
+                    "status": "pending",
+                }
+            )
+            .execute()
+        )
 
     doc = result.data[0]
     doc_id = doc["id"]

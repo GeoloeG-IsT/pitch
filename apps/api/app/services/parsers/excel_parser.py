@@ -17,7 +17,15 @@ from openai import OpenAI
 from openpyxl import load_workbook
 
 _encoding = tiktoken.encoding_for_model("text-embedding-3-small")
-_embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+_embed_model: OpenAIEmbedding | None = None
+
+
+def _get_embed_model() -> OpenAIEmbedding:
+    """Lazy-init so the model picks up OPENAI_API_KEY set at startup."""
+    global _embed_model
+    if _embed_model is None:
+        _embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+    return _embed_model
 
 
 def _rows_to_text(rows: list[list[str]]) -> str:
@@ -74,7 +82,7 @@ async def parse_excel(file_bytes: bytes) -> list[dict]:
         table_text = _rows_to_text(rows)
         summary = _generate_summary(sheet_name, table_text)
 
-        embedding = await _embed_model.aget_text_embedding(summary)
+        embedding = await _get_embed_model().aget_text_embedding(summary)
         token_count = len(_encoding.encode(summary))
 
         chunks.append({

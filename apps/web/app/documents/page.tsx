@@ -101,7 +101,12 @@ export default function DocumentsPage() {
     for (const file of files) {
       try {
         const doc = await uploadDocument(file);
-        setDocuments((prev) => [doc, ...prev]);
+        setDocuments((prev) => {
+          // If the API replaced an existing document (same ID), update in place
+          const exists = prev.some((d) => d.id === doc.id);
+          if (exists) return prev.map((d) => (d.id === doc.id ? doc : d));
+          return [doc, ...prev];
+        });
         pollingIds.current.set(doc.id, Date.now());
         toast(`Processing ${file.name}...`);
       } catch (err) {
