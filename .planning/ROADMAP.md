@@ -65,11 +65,11 @@ Plans:
   1. Investor can type a natural language question and receive an AI-generated answer with specific source citations (document name, section)
   2. Answers stream in real-time token-by-token (not a loading spinner followed by a full response)
   3. AI references related sections across the full pitch structure when relevant (e.g., linking financials to market size claims)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md -- Database migration (queries table, match_chunks RPC), retrieval service (vector search + Cohere rerank), query engine (GPT-4o streaming)
+- [ ] 03-02-PLAN.md -- API endpoints (REST + WebSocket), frontend query page with streaming UI and citation components
 
 ### Phase 4: Smart Document Viewer
 **Goal**: Investors experience the pitch as a polished, scrollable web document with Q&A integrated inline at each section
@@ -154,7 +154,7 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 |-------|----------------|--------|-----------|
 | 1. Foundation + Demo Content | 2/2 | Complete   | 2026-03-17 |
 | 2. Document Ingestion | 3/3 | Complete   | 2026-03-19 |
-| 3. RAG Query Engine | 0/0 | Not started | - |
+| 3. RAG Query Engine | 0/2 | In Progress | - |
 | 4. Smart Document Viewer | 0/0 | Not started | - |
 | 5. Trust + HITL Validation | 0/0 | Not started | - |
 | 6. Auth + Access Control | 0/0 | Not started | - |
