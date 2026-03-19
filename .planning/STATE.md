@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 4 context gathered
-last_updated: "2026-03-19T15:02:57.733Z"
+stopped_at: Phase 4 planned — 3 plans in 3 waves, verification passed
+last_updated: "2026-03-19T16:28:53.319Z"
 last_activity: 2026-03-19 -- Completed 03-02 (API + UI integration with streaming Q&A)
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 7
+  total_plans: 10
   completed_plans: 7
   percent: 100
 ---
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Investors can ask natural language questions about any aspect of a startup's pitch and get accurate, source-cited answers instantly, without the founder needing to be in the room.
-**Current focus:** Phase 3 RAG Query Engine complete. All plans finished.
+**Current focus:** Phase 4 Smart Document Viewer in progress. Plan 04-01 complete.
 
 ## Current Position
 
-Phase: 3 of 8 (RAG Query Engine)
-Plan: 2 of 2 in current phase (03-02 complete, phase complete)
-Status: Phase 3 complete
-Last activity: 2026-03-19 -- Completed 03-02 (API + UI integration with streaming Q&A)
+Phase: 4 of 8 (Smart Document Viewer)
+Plan: 1 of 3 in current phase (04-01 complete)
+Status: Executing phase 4
+Last activity: 2026-03-19 -- Completed 04-01 (Pitch API and Data Layer)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [██████████] 100%
 | Phase 02 P03 | 15min | 2 tasks | 15 files |
 | Phase 03 P01 | 8min | 2 tasks | 10 files |
 | Phase 03 P02 | 12min | 3 tasks | 16 files |
+| Phase 04 P01 | 6min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,8 @@ Recent decisions affecting current work:
 - 03-02: WebSocket connects directly to FastAPI (not through Next.js proxy) via NEXT_PUBLIC_WS_URL
 - 03-02: Empty chunks guard returns helpful "upload documents first" message
 - 03-02: Cohere rerank guard prevents 400 error on empty document list
+- 04-01: Pitch endpoint selects only id/title/file_type columns (minimal payload)
+- 04-01: Chunks ordered by section_number ascending via Supabase .order()
 
 ### Pending Todos
 
@@ -101,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T15:02:57.730Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-smart-document-viewer/04-CONTEXT.md
+Last session: 2026-03-19T16:36:13Z
+Stopped at: Completed 04-01-PLAN.md (Pitch API and Data Layer)
+Resume file: .planning/phases/04-smart-document-viewer/04-02-PLAN.md
