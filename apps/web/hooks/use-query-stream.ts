@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { createQuery, type Citation } from "@/lib/query-api";
 
-export type QueryStatus = "idle" | "retrieving" | "generating" | "done" | "queued" | "error";
+export type QueryStatus = "idle" | "retrieving" | "generating" | "done" | "error";
 
 export function useQueryStream() {
   const [answer, setAnswer] = useState("");
@@ -60,8 +60,9 @@ export function useQueryStream() {
             break;
           case "queued":
             setIsQueued(true);
-            setStatus("queued");
-            setAnswer(msg.message);
+            setStatus("done");
+            setConfidenceScore(msg.confidence_score ?? null);
+            setConfidenceTier(msg.confidence_tier ?? null);
             break;
           case "replace_answer":
             setAnswer(msg.answer);
@@ -81,7 +82,7 @@ export function useQueryStream() {
       ws.onclose = () => {
         // Only set error if we haven't already reached a terminal state
         setStatus((prev) => {
-          if (prev !== "done" && prev !== "error" && prev !== "queued") {
+          if (prev !== "done" && prev !== "error") {
             setError("Connection closed unexpectedly");
             return "error";
           }

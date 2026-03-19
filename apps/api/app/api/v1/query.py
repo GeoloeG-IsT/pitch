@@ -72,8 +72,8 @@ async def stream_query(websocket: WebSocket, query_id: str):
         )
 
         # Determine routing based on confidence tier
-        if confidence_tier == "low":
-            # Low-confidence: queue for founder review
+        if confidence_tier in ("low", "moderate"):
+            # Low/moderate-confidence: queue for founder review
             client.table("queries").update({
                 "answer": answer,
                 "citations": [c.model_dump() for c in citations],
@@ -85,11 +85,12 @@ async def stream_query(websocket: WebSocket, query_id: str):
 
             await websocket.send_json({
                 "type": "queued",
-                "message": "This answer is being verified by the team -- check back shortly.",
                 "query_id": query_id,
+                "confidence_score": confidence_score,
+                "confidence_tier": confidence_tier,
             })
         else:
-            # High/moderate: auto-publish with confidence data
+            # High: auto-publish with confidence data
             client.table("queries").update({
                 "answer": answer,
                 "citations": [c.model_dump() for c in citations],

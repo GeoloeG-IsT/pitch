@@ -69,7 +69,6 @@ export function PitchViewer() {
   if (loading) {
     return (
       <div className="min-h-screen bg-muted">
-        <div className="h-14 bg-card border-b" />
         <div className="max-w-5xl mx-auto py-16 px-4 space-y-8">
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-card rounded-lg p-8 space-y-3">
@@ -122,23 +121,16 @@ export function PitchViewer() {
 
   return (
     <div className="min-h-screen bg-muted">
-      {/* Sticky header */}
-      <header
-        className={cn(
-          "sticky top-0 z-40 h-14 bg-card border-b flex items-center px-4 lg:px-6"
-        )}
-      >
+      <div className="lg:hidden flex items-center px-4 py-2">
         <Button
           variant="ghost"
           size="icon"
-          className="lg:hidden mr-2"
           onClick={() => setTocOpen(true)}
           aria-label="Open table of contents"
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <span className="font-semibold text-foreground">Zeee Pitch Zooo</span>
-      </header>
+      </div>
 
       <div className="flex">
         <TOCSidebar

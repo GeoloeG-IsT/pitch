@@ -39,7 +39,7 @@ export function QAThread({ messages, onCitationClick }: QAThreadProps) {
 
   if (messages.length === 0) {
     return (
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 overflow-hidden">
         <div className="flex items-center justify-center h-full p-8 text-center text-muted-foreground">
           <p className="text-sm">
             Ask a question about the pitch to get started.
@@ -50,7 +50,7 @@ export function QAThread({ messages, onCitationClick }: QAThreadProps) {
   }
 
   return (
-    <ScrollArea className="flex-1">
+    <ScrollArea className="flex-1 overflow-hidden">
       <div className="flex flex-col gap-6 p-4">
         {messages.map((msg) => (
           <div key={msg.id} className="flex flex-col gap-3">
@@ -67,49 +67,43 @@ export function QAThread({ messages, onCitationClick }: QAThreadProps) {
             </div>
 
             {/* Answer area */}
-            {msg.isQueued && !msg.isVerified ? (
-              <div className="mr-8 transition-opacity duration-300">
+            <div className="mr-8 transition-opacity duration-300">
+              {msg.status === "retrieving" ? (
+                <p className="text-sm text-muted-foreground animate-pulse">
+                  Thinking...
+                </p>
+              ) : (
+                <StreamingAnswer
+                  answer={msg.answer}
+                  status={msg.status}
+                  error={msg.error}
+                />
+              )}
+            </div>
+
+            {/* Badge area */}
+            <div className="mr-8">
+              {msg.isVerified ? (
+                <VerifiedBadge />
+              ) : msg.isQueued ? (
                 <VerificationPlaceholder />
+              ) : msg.confidenceTier ? (
+                <ConfidenceBadge
+                  tier={msg.confidenceTier as "high" | "moderate" | "low"}
+                  score={msg.confidenceScore || 0}
+                />
+              ) : null}
+            </div>
+
+            {/* Citations */}
+            {msg.citations.length > 0 && (
+              <div className="mr-8">
+                <CitationList
+                  citations={msg.citations}
+                  open={false}
+                  onCitationClick={onCitationClick}
+                />
               </div>
-            ) : (
-              <>
-                <div className="mr-8 transition-opacity duration-300">
-                  {msg.status === "retrieving" ? (
-                    <p className="text-sm text-muted-foreground animate-pulse">
-                      Thinking...
-                    </p>
-                  ) : (
-                    <StreamingAnswer
-                      answer={msg.answer}
-                      status={msg.status}
-                      error={msg.error}
-                    />
-                  )}
-                </div>
-
-                {/* Badge area */}
-                <div className="mr-8">
-                  {msg.isVerified ? (
-                    <VerifiedBadge />
-                  ) : msg.confidenceTier && !msg.isQueued ? (
-                    <ConfidenceBadge
-                      tier={msg.confidenceTier as "high" | "moderate" | "low"}
-                      score={msg.confidenceScore || 0}
-                    />
-                  ) : null}
-                </div>
-
-                {/* Citations */}
-                {msg.citations.length > 0 && (
-                  <div className="mr-8">
-                    <CitationList
-                      citations={msg.citations}
-                      open={false}
-                      onCitationClick={onCitationClick}
-                    />
-                  </div>
-                )}
-              </>
             )}
           </div>
         ))}
