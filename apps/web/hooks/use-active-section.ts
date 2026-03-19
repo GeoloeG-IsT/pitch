@@ -4,29 +4,33 @@ import { useCallback, useRef, useState } from "react";
 
 export function useActiveSection() {
   const [activeId, setActiveId] = useState<string | null>(null);
-  // Track all currently visible section IDs with their top positions
-  const visibleSections = useRef<Map<string, number>>(new Map());
+  const visibleIds = useRef<Set<string>>(new Set());
 
-  const handleInView = useCallback((id: string, inView: boolean) => {
-    if (inView) {
-      const el = document.getElementById(`section-${id}`);
-      const top = el?.getBoundingClientRect().top ?? Infinity;
-      visibleSections.current.set(id, top);
-    } else {
-      visibleSections.current.delete(id);
-    }
-
-    // Pick the topmost visible section (closest to top of viewport)
+  const pickTopmost = useCallback(() => {
     let bestId: string | null = null;
     let bestTop = Infinity;
-    for (const [sectionId, top] of visibleSections.current) {
-      if (top < bestTop) {
+    for (const id of visibleIds.current) {
+      const el = document.getElementById(`section-${id}`);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      // Pick the section whose top is closest to (but not far above) the header
+      // Sections above the header have negative top; prefer the one nearest 0
+      if (Math.abs(top) < Math.abs(bestTop) || (bestTop < -200 && top > bestTop)) {
         bestTop = top;
-        bestId = sectionId;
+        bestId = id;
       }
     }
     if (bestId) setActiveId(bestId);
   }, []);
+
+  const handleInView = useCallback((id: string, inView: boolean) => {
+    if (inView) {
+      visibleIds.current.add(id);
+    } else {
+      visibleIds.current.delete(id);
+    }
+    pickTopmost();
+  }, [pickTopmost]);
 
   return { activeId, handleInView };
 }
