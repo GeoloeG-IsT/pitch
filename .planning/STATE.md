@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-02-PLAN.md (Pitch Viewer Components)
-last_updated: "2026-03-19T16:43:18.636Z"
-last_activity: 2026-03-19 -- Completed 04-02 (Pitch Viewer Components)
+stopped_at: Completed 04-03-PLAN.md (Inline Q&A Panel)
+last_updated: "2026-03-19T17:19:24Z"
+last_activity: 2026-03-19 -- Completed 04-03 (Inline Q&A Panel)
 progress:
   total_phases: 8
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 80
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Investors can ask natural language questions about any aspect of a startup's pitch and get accurate, source-cited answers instantly, without the founder needing to be in the room.
-**Current focus:** Phase 4 Smart Document Viewer in progress. Plan 04-01 complete.
+**Current focus:** Phase 4 Smart Document Viewer complete. All 3 plans finished.
 
 ## Current Position
 
-Phase: 4 of 8 (Smart Document Viewer)
-Plan: 2 of 3 in current phase (04-02 complete)
-Status: Executing phase 4
-Last activity: 2026-03-19 -- Completed 04-02 (Pitch Viewer Components)
+Phase: 4 of 8 (Smart Document Viewer) -- COMPLETE
+Plan: 3 of 3 in current phase (04-03 complete)
+Status: Phase 4 complete, ready for Phase 5
+Last activity: 2026-03-19 -- Completed 04-03 (Inline Q&A Panel)
 
-Progress: [████████░░] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [████████░░] 80%
 | Phase 03 P02 | 12min | 3 tasks | 16 files |
 | Phase 04 P01 | 6min | 2 tasks | 11 files |
 | Phase 04 P02 | 3min | 2 tasks | 12 files |
+| Phase 04 P03 | 8min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,9 @@ Recent decisions affecting current work:
 - [Phase 04]: Client-side fetch in PitchViewer useEffect (viewer is fully interactive)
 - [Phase 04]: TOC uses Sheet component for mobile drawer (left side) matching shadcn pattern
 - [Phase 04]: ImageIcon from lucide-react to avoid next/image conflict
+- 04-03: Custom fixed panel instead of Sheet for Q&A (avoids modal scroll-lock, keeps content scrollable)
+- 04-03: Single useQueryStream instance with message snapshot pattern for conversation history
+- 04-03: Citation click scrolls viewer with 2s ring-primary/30 highlight per UI-SPEC Animation Contract
 
 ### Pending Todos
 
@@ -108,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T16:43:18.633Z
-Stopped at: Completed 04-02-PLAN.md (Pitch Viewer Components)
+Last session: 2026-03-19T17:19:24Z
+Stopped at: Completed 04-03-PLAN.md (Inline Q&A Panel)
 Resume file: None

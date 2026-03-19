@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation + Demo Content** - Turborepo monorepo scaffolding (pnpm + uv), API contract, and Zeee Pitch Zooo's own pitch materials (completed 2026-03-17)
 - [x] **Phase 2: Document Ingestion** - Multimodal document parsing, chunking, embedding, and content management (completed 2026-03-19)
 - [x] **Phase 3: RAG Query Engine** - Vector retrieval, prompt construction, and streamed AI answers with citations (completed 2026-03-19)
-- [ ] **Phase 4: Smart Document Viewer** - Scrollable investor-facing pitch viewer with inline contextual Q&A
+- [x] **Phase 4: Smart Document Viewer** - Scrollable investor-facing pitch viewer with inline contextual Q&A (completed 2026-03-19)
 - [ ] **Phase 5: Trust + HITL Validation** - Confidence scoring, answer routing, and founder review dashboard
 - [ ] **Phase 6: Auth + Access Control** - Authentication, RBAC, shareable links, and access revocation
 - [ ] **Phase 7: Analytics** - Investor engagement tracking, per-section analytics, and behavioral signals
@@ -156,7 +156,7 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | 1. Foundation + Demo Content | 2/2 | Complete   | 2026-03-17 |
 | 2. Document Ingestion | 3/3 | Complete   | 2026-03-19 |
 | 3. RAG Query Engine | 2/2 | Complete   | 2026-03-19 |
-| 4. Smart Document Viewer | 2/3 | In Progress|  |
+| 4. Smart Document Viewer | 3/3 | Complete   | 2026-03-19 |
 | 5. Trust + HITL Validation | 0/0 | Not started | - |
 | 6. Auth + Access Control | 0/0 | Not started | - |
 | 7. Analytics | 0/0 | Not started | - |
