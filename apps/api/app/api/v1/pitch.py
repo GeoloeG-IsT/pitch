@@ -20,6 +20,7 @@ async def get_pitch() -> PitchResponse:
         client.table("documents")
         .select("id, title, file_type")
         .eq("status", "ready")
+        .eq("purpose", "pitch")
         .order("created_at")
         .execute()
     )

@@ -18,6 +18,7 @@ class DocumentResponse(BaseModel):
     file_type: str
     file_size_bytes: int | None
     status: str
+    purpose: str = "pitch"
     metadata: dict
     created_at: str
     updated_at: str

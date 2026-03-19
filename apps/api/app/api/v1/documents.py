@@ -48,6 +48,7 @@ def _row_to_response(row: dict, chunk_count: int | None = None) -> DocumentRespo
         file_type=row["file_type"],
         file_size_bytes=row.get("file_size_bytes"),
         status=row["status"],
+        purpose=row.get("purpose", "pitch"),
         metadata=row.get("metadata") or {},
         created_at=row["created_at"],
         updated_at=row["updated_at"],
@@ -60,12 +61,16 @@ async def upload_document(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     title: str = Form(None),
+    purpose: str = Form("pitch"),
 ):
     """Upload a document for ingestion."""
     if not file.filename:
         raise HTTPException(status_code=400, detail="Filename is required")
 
     file_type = _detect_file_type(file.filename)
+
+    if purpose not in ("pitch", "rag"):
+        raise HTTPException(status_code=400, detail="purpose must be 'pitch' or 'rag'")
 
     # MUST read bytes before background task -- UploadFile closes after endpoint returns
     file_bytes = await file.read()
@@ -96,6 +101,7 @@ async def upload_document(
                     "file_type": file_type,
                     "file_size_bytes": len(file_bytes),
                     "status": "pending",
+                    "purpose": purpose,
                     "metadata": {},
                 }
             )
@@ -113,6 +119,7 @@ async def upload_document(
                     "file_type": file_type,
                     "file_size_bytes": len(file_bytes),
                     "status": "pending",
+                    "purpose": purpose,
                 }
             )
             .execute()

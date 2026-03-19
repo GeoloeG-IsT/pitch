@@ -5,6 +5,7 @@ export interface Document {
   file_type: string;
   file_size_bytes: number | null;
   status: "pending" | "processing" | "ready" | "error";
+  purpose: "pitch" | "rag";
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -18,10 +19,11 @@ export interface DocumentListResponse {
 
 const API_BASE = "/api/v1";
 
-export async function uploadDocument(file: File, title?: string): Promise<Document> {
+export async function uploadDocument(file: File, title?: string, purpose: "pitch" | "rag" = "pitch"): Promise<Document> {
   const formData = new FormData();
   formData.append("file", file);
   if (title) formData.append("title", title);
+  formData.append("purpose", purpose);
   const res = await fetch(`${API_BASE}/documents`, { method: "POST", body: formData });
   if (!res.ok) throw new Error(`Upload failed: ${res.statusText}`);
   return res.json();
