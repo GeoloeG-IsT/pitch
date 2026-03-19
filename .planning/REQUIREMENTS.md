@@ -17,8 +17,8 @@ Requirements for the PoC demo. Each maps to roadmap phases.
 ### Document Viewer
 
 - [x] **VIEW-01**: Investor sees pitch content as a scrollable, web-native document (card/section format)
-- [ ] **VIEW-02**: Viewer is mobile-responsive
-- [ ] **VIEW-03**: Viewer has professional, polished visual design
+- [x] **VIEW-02**: Viewer is mobile-responsive
+- [x] **VIEW-03**: Viewer has professional, polished visual design
 
 ### AI Q&A
 
@@ -123,8 +123,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INGEST-03 | Phase 2 | Complete |
 | INGEST-04 | Phase 2 | Complete |
 | VIEW-01 | Phase 4 | Complete |
-| VIEW-02 | Phase 4 | Pending |
-| VIEW-03 | Phase 4 | Pending |
+| VIEW-02 | Phase 4 | Complete |
+| VIEW-03 | Phase 4 | Complete |
 | QA-01 | Phase 3 | Complete |
 | QA-02 | Phase 4 | Pending |
 | QA-03 | Phase 3 | Complete |

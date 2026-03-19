@@ -156,7 +156,7 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | 1. Foundation + Demo Content | 2/2 | Complete   | 2026-03-17 |
 | 2. Document Ingestion | 3/3 | Complete   | 2026-03-19 |
 | 3. RAG Query Engine | 2/2 | Complete   | 2026-03-19 |
-| 4. Smart Document Viewer | 1/3 | In Progress|  |
+| 4. Smart Document Viewer | 2/3 | In Progress|  |
 | 5. Trust + HITL Validation | 0/0 | Not started | - |
 | 6. Auth + Access Control | 0/0 | Not started | - |
 | 7. Analytics | 0/0 | Not started | - |

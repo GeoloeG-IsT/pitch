@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 4 planned — 3 plans in 3 waves, verification passed
-last_updated: "2026-03-19T16:28:53.319Z"
-last_activity: 2026-03-19 -- Completed 03-02 (API + UI integration with streaming Q&A)
+status: executing
+stopped_at: Completed 04-02-PLAN.md (Pitch Viewer Components)
+last_updated: "2026-03-19T16:43:18.636Z"
+last_activity: 2026-03-19 -- Completed 04-02 (Pitch Viewer Components)
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 10
-  completed_plans: 7
-  percent: 100
+  completed_plans: 9
+  percent: 80
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 ## Current Position
 
 Phase: 4 of 8 (Smart Document Viewer)
-Plan: 1 of 3 in current phase (04-01 complete)
+Plan: 2 of 3 in current phase (04-02 complete)
 Status: Executing phase 4
-Last activity: 2026-03-19 -- Completed 04-01 (Pitch API and Data Layer)
+Last activity: 2026-03-19 -- Completed 04-02 (Pitch Viewer Components)
 
 Progress: [████████░░] 80%
 
@@ -57,6 +57,7 @@ Progress: [████████░░] 80%
 | Phase 03 P01 | 8min | 2 tasks | 10 files |
 | Phase 03 P02 | 12min | 3 tasks | 16 files |
 | Phase 04 P01 | 6min | 2 tasks | 11 files |
+| Phase 04 P02 | 3min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,9 @@ Recent decisions affecting current work:
 - 03-02: Cohere rerank guard prevents 400 error on empty document list
 - 04-01: Pitch endpoint selects only id/title/file_type columns (minimal payload)
 - 04-01: Chunks ordered by section_number ascending via Supabase .order()
+- [Phase 04]: Client-side fetch in PitchViewer useEffect (viewer is fully interactive)
+- [Phase 04]: TOC uses Sheet component for mobile drawer (left side) matching shadcn pattern
+- [Phase 04]: ImageIcon from lucide-react to avoid next/image conflict
 
 ### Pending Todos
 
@@ -104,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T16:36:13Z
-Stopped at: Completed 04-01-PLAN.md (Pitch API and Data Layer)
-Resume file: .planning/phases/04-smart-document-viewer/04-02-PLAN.md
+Last session: 2026-03-19T16:43:18.633Z
+Stopped at: Completed 04-02-PLAN.md (Pitch Viewer Components)
+Resume file: None
