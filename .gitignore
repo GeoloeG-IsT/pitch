@@ -21,6 +21,7 @@ __pycache__/
 # Build outputs
 dist/
 .turbo/
+*.tsbuildinfo
 
 # Content build output
 content/output/

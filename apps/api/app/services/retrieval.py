@@ -69,6 +69,8 @@ async def rerank_chunks(
     chunks: list[dict], question: str, top_n: int = 10
 ) -> list[dict]:
     """Rerank chunks using Cohere, or fall back to similarity order."""
+    if not chunks:
+        return []
     if not settings.cohere_api_key:
         return chunks[:top_n]
 

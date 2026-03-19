@@ -106,6 +106,12 @@ async def run_query_pipeline(
         await send_message({"type": "status", "status": "retrieving"})
         chunks = await retrieve_and_rerank(question)
 
+        if not chunks:
+            no_docs_msg = "I don't have any source documents to reference yet. Please upload documents first, then try your question again."
+            await send_message({"type": "token", "content": no_docs_msg})
+            await send_message({"type": "citations", "citations": []})
+            return (no_docs_msg, [])
+
         # 2. Look up document titles
         doc_ids = list(set(str(c["document_id"]) for c in chunks))
         doc_titles = await lookup_document_titles(doc_ids)
