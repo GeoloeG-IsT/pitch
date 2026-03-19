@@ -58,6 +58,7 @@ Notes:
 - Heading is used for tab section titles ("Pending Review", "History").
 - Body is used for question text, AI draft answer text, and founder-edited answer text in review cards.
 - Label is used for confidence tier labels, timestamps, section context references, and review status tags.
+- The 2px gap between Label (14px) and Body (16px) is intentional: Label is used exclusively for metadata and secondary annotations (timestamps, badge text, status tags) where reduced size creates clear visual hierarchy against Body-sized primary content (questions and answers). These two sizes never appear in adjacent heading-to-body sequences where the small step would reduce contrast.
 
 ---
 
@@ -90,13 +91,13 @@ Each confidence badge uses white foreground text on its tier color background.
 | `--color-verified` | `hsl(142 71% 45%)` | "Verified" badge for founder-reviewed answers (same green as high confidence) |
 
 Accent (`--primary`) reserved for:
-- "Approve" action button
+- "Approve Answer" action button
 - Active tab indicator
 - Pending review count badge in navigation
 - Inline edit cursor/focus ring
-- "Submit" button for replacement answer
+- "Submit Replacement" button for replacement answer
 
-**Focal point:** Primary visual anchor is the review card queue; the Approve button is the primary interactive focal point, enabling fast throughput.
+**Focal point:** Primary visual anchor is the review card queue; the Approve Answer button is the primary interactive focal point, enabling fast throughput.
 
 ---
 
@@ -115,7 +116,7 @@ Accent (`--primary`) reserved for:
 |-----------|-------------------|
 | Card | Review queue cards (question + answer + metadata) |
 | Badge | Confidence tier badges, "Verified" badge, review status tags, pending count indicator |
-| Button | Approve, Edit, Reject actions, Submit replacement |
+| Button | Approve Answer, Edit, Reject actions, Submit Replacement |
 | Skeleton | Loading placeholders for review queue |
 | Separator | Between review card sections (question / answer / actions) |
 | ScrollArea | Review queue scrollable list |
@@ -137,8 +138,8 @@ Accent (`--primary`) reserved for:
 | ReviewQueue | Scrollable list of ReviewCards for the Pending tab |
 | ReviewHistory | Scrollable list of completed review cards with status tags (Approved/Edited/Rejected) |
 | ValidationDashboard | Top-level page layout: heading + tabs (Pending/History) + content area |
-| InlineEditor | Textarea that replaces answer text on Edit click, with Save/Cancel affordance |
-| RejectionForm | Textarea for founder to write replacement answer when rejecting, with Submit button |
+| InlineEditor | Textarea that replaces answer text on Edit click, with Save & Approve / Discard Edit affordance |
+| RejectionForm | Textarea for founder to write replacement answer when rejecting, with Submit Replacement button |
 | PendingCountBadge | Small numeric badge in navigation showing count of pending reviews |
 | VerificationPlaceholder | Investor-facing placeholder shown for queued answers: skeleton-like card with message text |
 
@@ -165,7 +166,7 @@ Accent (`--primary`) reserved for:
 |   |  |  A: "The total addressable market..."             || |
 |   |  |  [Moderate confidence: 58%]                       || |
 |   |  |  Citations: [Pitch Deck > Slide 3]                || |
-|   |  |  [Approve]  [Edit]  [Reject]                      || |
+|   |  |  [Approve Answer]  [Edit]  [Reject]               || |
 |   |  +--------------------------------------------------+| |
 |   |                          32px gap                     | |
 |   |  +--------------------------------------------------+| |
@@ -240,18 +241,18 @@ Accent (`--primary`) reserved for:
 ### Review Card Behavior
 
 - Static display: question, answer text, confidence badge, citations, section context, timestamp
-- "Approve" button: publishes answer as-is, card animates out of Pending queue, appears in History with "Approved" status tag
-- "Edit" button: answer text transforms into Textarea (InlineEditor), Approve/Cancel buttons replace action row
-- "Reject" button: opens RejectionForm below the card (Textarea for replacement answer + Submit button)
+- "Approve Answer" button: publishes answer as-is, card animates out of Pending queue, appears in History with "Approved" status tag
+- "Edit" button: answer text transforms into Textarea (InlineEditor), Save & Approve / Discard Edit buttons replace action row
+- "Reject" button: opens RejectionForm below the card (Textarea for replacement answer + Submit Replacement button)
 - After any action: card transitions to History tab with appropriate status
 
 ### Inline Edit Behavior
 
 - Click "Edit": answer text becomes an auto-focused Textarea with the current answer pre-filled
 - Textarea height: auto-resizing, min 3 rows
-- Action row changes to: "Save & Approve" (primary) + "Cancel" (ghost)
+- Action row changes to: "Save & Approve" (primary) + "Discard Edit" (ghost)
 - "Save & Approve": submits edited text, publishes to investor
-- "Cancel": reverts to read-only view, restores original action buttons
+- "Discard Edit": reverts to read-only view, restores original action buttons
 
 ### Rejection Behavior
 
@@ -294,7 +295,7 @@ Accent (`--primary`) reserved for:
 
 | Element | Copy |
 |---------|------|
-| Primary CTA | "Approve" (review card action button) |
+| Primary CTA | "Approve Answer" (review card action button) |
 | Dashboard title | "Validation Dashboard" |
 | Pending tab label | "Pending Review ({count})" |
 | History tab label | "History" |
@@ -307,7 +308,7 @@ Accent (`--primary`) reserved for:
 | Verification placeholder | "This answer is being verified by the team -- check back shortly." |
 | Rejection textarea placeholder | "Write a replacement answer for the investor..." |
 | Edit save button | "Save & Approve" |
-| Edit cancel button | "Cancel" |
+| Edit cancel button | "Discard Edit" |
 | Reject submit button | "Submit Replacement" |
 | Confidence badge (high) | "High confidence" |
 | Confidence badge (moderate) | "Moderate confidence" |
@@ -319,7 +320,7 @@ Accent (`--primary`) reserved for:
 | History status: edited | "Edited" |
 | History status: rejected | "Replaced" |
 
-Destructive actions: "Reject" requires founder to write a replacement answer before confirming. No destructive confirmation dialog needed -- the rejection form itself is the friction gate (Submit is disabled until replacement text is provided).
+Destructive actions: "Reject" requires founder to write a replacement answer before confirming. No destructive confirmation dialog needed -- the rejection form itself is the friction gate (Submit Replacement is disabled until replacement text is provided).
 
 ---
 
