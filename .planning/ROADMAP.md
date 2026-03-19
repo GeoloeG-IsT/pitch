@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: RAG Query Engine** - Vector retrieval, prompt construction, and streamed AI answers with citations (completed 2026-03-19)
 - [x] **Phase 4: Smart Document Viewer** - Scrollable investor-facing pitch viewer with inline contextual Q&A (completed 2026-03-19)
 - [ ] **Phase 5: Trust + HITL Validation** - Confidence scoring, answer routing, and founder review dashboard
-- [ ] **Phase 6: Auth + Access Control** - Authentication, RBAC, shareable links, and access revocation
+- [x] **Phase 6: Auth + Access Control** - Authentication, RBAC, shareable links, and access revocation (completed 2026-03-19)
 - [ ] **Phase 7: Analytics** - Investor engagement tracking, per-section analytics, and behavioral signals
 - [ ] **Phase 8: Live Pitch Mode** - Real-time presenter view with live investor Q&A
 
@@ -161,6 +161,6 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | 3. RAG Query Engine | 2/2 | Complete   | 2026-03-19 |
 | 4. Smart Document Viewer | 3/3 | Complete   | 2026-03-19 |
 | 5. Trust + HITL Validation | 0/3 | Not started | - |
-| 6. Auth + Access Control | 0/4 | Not started | - |
+| 6. Auth + Access Control | 4/4 | Complete   | 2026-03-19 |
 | 7. Analytics | 0/0 | Not started | - |
 | 8. Live Pitch Mode | 0/0 | Not started | - |
