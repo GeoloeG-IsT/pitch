@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TOCSidebar } from "./toc-sidebar";
 import { DocumentGroup } from "./document-group";
-import { FloatingInput } from "@/components/viewer/fab-button";
+import { FloatingInput } from "@/components/viewer/floating-input";
 import { QAPanel } from "@/components/qa/qa-panel";
 import { useActiveSection } from "@/hooks/use-active-section";
 
