@@ -48,16 +48,17 @@ Exceptions: FAB touch target is 56px (48px icon area + 4px padding each side) fo
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 16px | 400 (regular) | 1.6 |
-| Label | 14px | 500 (medium) | 1.4 |
+| Label | 14px | 400 (regular) | 1.4 |
 | Heading | 24px | 600 (semibold) | 1.25 |
-| Display | 32px | 700 (bold) | 1.2 |
+| Display | 32px | 600 (semibold) | 1.2 |
 
 Notes:
+- Two weights only: 400 (regular) for Body and Label, 600 (semibold) for Heading and Display.
 - Body at 16px/1.6 optimized for long-form reading (pitch content is the primary artifact).
 - Display is used exclusively for document group titles (e.g., "Pitch Deck", "Financial Model").
 - Heading is used for section card titles derived from heading chunks.
 - Label is used for metadata text (section context chip, TOC items, Q&A timestamps, citation references).
-- Key metric numbers in financial cards use Display size at weight 700.
+- Key metric numbers in financial cards use Display size at weight 600.
 
 ---
 
@@ -81,6 +82,8 @@ Accent (`--primary`) reserved for:
 - Clickable citation links (hover state)
 
 Viewer page background: Use `bg-muted` (the subtle off-white) so white `bg-card` section cards visually lift off the surface. This creates the Gamma-style card-on-surface depth without additional shadows.
+
+**Focal point:** Primary visual anchor is the section content cards as the dominant reading surface; the FAB is the primary interactive focal point, drawing the eye to the Q&A entry point.
 
 ---
 
@@ -197,7 +200,7 @@ Viewer page background: Use `bg-muted` (the subtle off-white) so white `bg-card`
 
 ### FAB Behavior
 
-- Default state: Circular button with MessageSquare icon (Lucide `message-square`)
+- Default state: Circular button with MessageSquare icon (Lucide `message-square`), `aria-label="Ask a question"`
 - Hover: Tooltip "Ask a question"
 - Click: Opens Q&A Sheet panel (desktop/tablet) or full-screen Dialog (mobile)
 - While Q&A panel is open: FAB hides (panel has its own close affordance)
@@ -206,7 +209,7 @@ Viewer page background: Use `bg-muted` (the subtle off-white) so white `bg-card`
 ### Q&A Panel Behavior
 
 - Opens pre-scoped to the section visible when FAB was clicked
-- Section context chip displayed above input: Badge with section name + X dismiss button
+- Section context chip displayed above input: Badge with section name + X dismiss button (`aria-label="Remove section filter"`)
 - Dismissing chip switches to global Q&A mode (no section scoping)
 - Conversation thread: scrollable area showing all Q&A pairs from current session
 - Each answer streams in real-time via existing WebSocket infrastructure
@@ -272,7 +275,7 @@ Destructive actions: None in this phase. The viewer is read-only for investors.
 - Render as MetricCard grid inside Card body
 - Parse table content to extract label-value pairs
 - Grid: 3 columns on desktop, 2 on tablet, 1 on mobile
-- Each MetricCard: Label (14px, muted-foreground), Value (32px, bold, foreground), optional sub-label
+- Each MetricCard: Label (14px, muted-foreground), Value (32px, semibold, foreground), optional sub-label
 - If table data cannot be parsed into key-value pairs, fall back to a styled HTML table with `border-collapse`, alternating row backgrounds using `bg-muted`
 
 ### chunk_type: "heading"
