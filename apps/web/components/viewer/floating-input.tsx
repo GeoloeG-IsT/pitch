@@ -48,7 +48,7 @@ export function FloatingInput({ onSubmit, visible, sectionName, className }: Flo
     <form
       onSubmit={handleSubmit}
       className={cn(
-        "fixed bottom-6 left-1/2 -translate-x-1/2 z-50",
+        "sticky bottom-6 left-1/2 -translate-x-1/2 z-50 mx-auto",
         "w-[min(560px,calc(100%-2rem))]",
         "flex items-center gap-2 rounded-full bg-card border-2 border-black shadow-xl px-4 py-2",
         className

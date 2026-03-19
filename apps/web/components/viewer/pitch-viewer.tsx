@@ -146,7 +146,7 @@ export function PitchViewer() {
         />
         <main
           className={cn(
-            "flex-1 py-16 px-4 lg:px-8 transition-[padding] duration-300",
+            "relative flex-1 py-16 px-4 lg:px-8 transition-[padding] duration-300",
             qaOpen && "lg:pr-[460px]"
           )}
         >
@@ -159,17 +159,17 @@ export function PitchViewer() {
               />
             ))}
           </div>
+
+          <FloatingInput
+            onSubmit={(question) => {
+              setInitialQuestion(question);
+              setQaOpen(true);
+            }}
+            visible={!qaOpen && data.documents.length > 0}
+            sectionName={activeSectionName}
+          />
         </main>
       </div>
-
-      <FloatingInput
-        onSubmit={(question) => {
-          setInitialQuestion(question);
-          setQaOpen(true);
-        }}
-        visible={!qaOpen && data.documents.length > 0}
-        sectionName={activeSectionName}
-      />
 
       <QAPanel
         open={qaOpen}
