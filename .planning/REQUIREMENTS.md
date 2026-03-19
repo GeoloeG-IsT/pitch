@@ -37,8 +37,8 @@ Requirements for the PoC demo. Each maps to roadmap phases.
 
 - [x] **AUTH-01**: Users can create accounts and log in
 - [x] **AUTH-02**: Role-based access control (founder vs investor roles with different permissions)
-- [ ] **AUTH-03**: Founder can generate secure shareable links for investor access
-- [ ] **AUTH-04**: Founder can revoke investor access
+- [x] **AUTH-03**: Founder can generate secure shareable links for investor access
+- [x] **AUTH-04**: Founder can revoke investor access
 
 ### Content Management
 
@@ -134,8 +134,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TRUST-03 | Phase 5 | Complete |
 | AUTH-01 | Phase 6 | Complete |
 | AUTH-02 | Phase 6 | Complete |
-| AUTH-03 | Phase 6 | Pending |
-| AUTH-04 | Phase 6 | Pending |
+| AUTH-03 | Phase 6 | Complete |
+| AUTH-04 | Phase 6 | Complete |
 | MGMT-01 | Phase 2 | Complete |
 | MGMT-02 | Phase 2 | Complete |
 | ANLYT-01 | Phase 7 | Pending |
