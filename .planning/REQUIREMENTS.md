@@ -22,9 +22,9 @@ Requirements for the PoC demo. Each maps to roadmap phases.
 
 ### AI Q&A
 
-- [ ] **QA-01**: Investor can ask natural language questions and receive AI-generated answers with source citations
+- [x] **QA-01**: Investor can ask natural language questions and receive AI-generated answers with source citations
 - [ ] **QA-02**: Q&A is contextual to the section being viewed (inline, not separate chat panel)
-- [ ] **QA-03**: AI is aware of full pitch structure and can reference related sections elsewhere in the presentation
+- [x] **QA-03**: AI is aware of full pitch structure and can reference related sections elsewhere in the presentation
 - [ ] **QA-04**: Answers stream in real-time (not a loading spinner then full response)
 
 ### Trust & Validation
@@ -125,9 +125,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VIEW-01 | Phase 4 | Pending |
 | VIEW-02 | Phase 4 | Pending |
 | VIEW-03 | Phase 4 | Pending |
-| QA-01 | Phase 3 | Pending |
+| QA-01 | Phase 3 | Complete |
 | QA-02 | Phase 4 | Pending |
-| QA-03 | Phase 3 | Pending |
+| QA-03 | Phase 3 | Complete |
 | QA-04 | Phase 3 | Pending |
 | TRUST-01 | Phase 5 | Pending |
 | TRUST-02 | Phase 5 | Pending |
