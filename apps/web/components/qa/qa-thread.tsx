@@ -77,12 +77,9 @@ export function QAThread({ messages, onCitationClick }: QAThreadProps) {
             {msg.citations.length > 0 && (
               <div className="mr-8">
                 <CitationList
-                  citations={msg.citations.map((c) =>
-                    onCitationClick
-                      ? { ...c, _onClick: () => onCitationClick(c.chunk_id) }
-                      : c
-                  )}
+                  citations={msg.citations}
                   open={false}
+                  onCitationClick={onCitationClick}
                 />
               </div>
             )}
