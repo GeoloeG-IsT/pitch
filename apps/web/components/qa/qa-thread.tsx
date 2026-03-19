@@ -6,6 +6,9 @@ import type { QueryStatus } from "@/hooks/use-query-stream";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StreamingAnswer } from "@/components/query/streaming-answer";
 import { CitationList } from "@/components/query/citation-list";
+import { ConfidenceBadge } from "@/components/confidence-badge";
+import { VerifiedBadge } from "@/components/verified-badge";
+import { VerificationPlaceholder } from "@/components/qa/verification-placeholder";
 
 export interface QAMessage {
   id: string;
@@ -15,6 +18,11 @@ export interface QAMessage {
   status: QueryStatus;
   error: string | null;
   sectionContext: string | null;
+  confidenceScore: number | null;
+  confidenceTier: string | null;
+  isQueued: boolean;
+  isVerified: boolean;
+  queryId?: string | null;
 }
 
 interface QAThreadProps {
@@ -59,29 +67,49 @@ export function QAThread({ messages, onCitationClick }: QAThreadProps) {
             </div>
 
             {/* Answer area */}
-            <div className="mr-8">
-              {msg.status === "retrieving" ? (
-                <p className="text-sm text-muted-foreground animate-pulse">
-                  Thinking...
-                </p>
-              ) : (
-                <StreamingAnswer
-                  answer={msg.answer}
-                  status={msg.status}
-                  error={msg.error}
-                />
-              )}
-            </div>
-
-            {/* Citations */}
-            {msg.citations.length > 0 && (
-              <div className="mr-8">
-                <CitationList
-                  citations={msg.citations}
-                  open={false}
-                  onCitationClick={onCitationClick}
-                />
+            {msg.isQueued && !msg.isVerified ? (
+              <div className="mr-8 transition-opacity duration-300">
+                <VerificationPlaceholder />
               </div>
+            ) : (
+              <>
+                <div className="mr-8 transition-opacity duration-300">
+                  {msg.status === "retrieving" ? (
+                    <p className="text-sm text-muted-foreground animate-pulse">
+                      Thinking...
+                    </p>
+                  ) : (
+                    <StreamingAnswer
+                      answer={msg.answer}
+                      status={msg.status}
+                      error={msg.error}
+                    />
+                  )}
+                </div>
+
+                {/* Badge area */}
+                <div className="mr-8">
+                  {msg.isVerified ? (
+                    <VerifiedBadge />
+                  ) : msg.confidenceTier && !msg.isQueued ? (
+                    <ConfidenceBadge
+                      tier={msg.confidenceTier as "high" | "moderate" | "low"}
+                      score={msg.confidenceScore || 0}
+                    />
+                  ) : null}
+                </div>
+
+                {/* Citations */}
+                {msg.citations.length > 0 && (
+                  <div className="mr-8">
+                    <CitationList
+                      citations={msg.citations}
+                      open={false}
+                      onCitationClick={onCitationClick}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         ))}

@@ -4,6 +4,7 @@ import { type FormEvent, type KeyboardEvent, useCallback, useEffect, useRef, use
 import { ArrowLeft, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQueryStream } from "@/hooks/use-query-stream";
+import { useNotificationStream } from "@/hooks/use-notification-stream";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionContextChip } from "./section-context-chip";
@@ -34,7 +35,31 @@ export function QAPanel({
   const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { answer, status, citations, error, askQuestion } = useQueryStream();
+  const { answer, status, citations, error, confidenceScore, confidenceTier, isQueued, queryId, askQuestion } = useQueryStream();
+
+  // Handle real-time notification of approved answers
+  const handleAnswerApproved = useCallback(
+    (approvedQueryId: string, approvedAnswer: string, _tier: string) => {
+      setMessages((prev) =>
+        prev.map((msg) => {
+          // Match by queryId stored in the message
+          if (msg.queryId === approvedQueryId) {
+            return {
+              ...msg,
+              isQueued: false,
+              isVerified: true,
+              answer: approvedAnswer,
+              status: "done" as const,
+            };
+          }
+          return msg;
+        })
+      );
+    },
+    []
+  );
+
+  useNotificationStream(handleAnswerApproved);
 
   // Detect mobile
   useEffect(() => {
@@ -64,6 +89,10 @@ export function QAPanel({
         status: "retrieving",
         error: null,
         sectionContext: sectionScope,
+        confidenceScore: null,
+        confidenceTier: null,
+        isQueued: false,
+        isVerified: false,
       };
       setMessages((prev) => [...prev, newMessage]);
       const queryText = sectionScope
@@ -79,7 +108,7 @@ export function QAPanel({
   useEffect(() => {
     if (messages.length === 0) return;
     const lastMsg = messages[messages.length - 1];
-    if (lastMsg.status === "done" || lastMsg.status === "error") return;
+    if (lastMsg.status === "done" || lastMsg.status === "error" || lastMsg.isVerified) return;
 
     setMessages((prev) => {
       const updated = [...prev];
@@ -90,10 +119,14 @@ export function QAPanel({
         status,
         citations,
         error,
+        confidenceScore,
+        confidenceTier,
+        isQueued,
+        queryId: queryId ?? last.queryId,
       };
       return updated;
     });
-  }, [answer, status, citations, error, messages.length]);
+  }, [answer, status, citations, error, confidenceScore, confidenceTier, isQueued, queryId, messages.length]);
 
   const handleSubmit = useCallback(
     (e?: FormEvent) => {
@@ -109,6 +142,10 @@ export function QAPanel({
         status: "retrieving",
         error: null,
         sectionContext: sectionScope,
+        confidenceScore: null,
+        confidenceTier: null,
+        isQueued: false,
+        isVerified: false,
       };
       setMessages((prev) => [...prev, newMessage]);
       setInputValue("");

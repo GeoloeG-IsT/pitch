@@ -14,6 +14,9 @@ export interface QueryResponse {
   citations: Citation[];
   status: string;
   created_at: string | null;
+  confidence_score: number | null;
+  confidence_tier: string | null;
+  review_status: string;
 }
 
 const API_BASE = "/api/v1";
