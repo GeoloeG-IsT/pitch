@@ -163,9 +163,17 @@ async def test_retrieve_and_rerank_max_10(
 
     # With no cohere key, graceful degradation returns top_n (10) but we only
     # have 3 sample chunks, so we get 3
-    from unittest.mock import patch
+    from unittest.mock import AsyncMock, MagicMock, patch
 
-    with patch("app.services.retrieval.settings") as mock_settings:
+    mock_embedding_response = MagicMock()
+    mock_embedding_response.data = [MagicMock(embedding=ZERO_EMBEDDING)]
+    mock_client = MagicMock()
+    mock_client.embeddings.create = AsyncMock(return_value=mock_embedding_response)
+
+    with (
+        patch("app.services.retrieval.settings") as mock_settings,
+        patch("app.services.retrieval.AsyncOpenAI", return_value=mock_client),
+    ):
         mock_settings.cohere_api_key = ""
         mock_settings.openai_api_key = "test-key"
         result = await retrieve_and_rerank("What is the revenue?")
