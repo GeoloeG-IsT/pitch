@@ -1,3 +1,14 @@
+import { createClient } from '@/lib/supabase/client'
+
+export async function getAuthHeaders(): Promise<HeadersInit> {
+  const supabase = createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session?.access_token) {
+    return { 'Authorization': `Bearer ${session.access_token}` }
+  }
+  return {}
+}
+
 export interface Document {
   id: string;
   title: string;
@@ -24,27 +35,29 @@ export async function uploadDocument(file: File, title?: string, purpose: "pitch
   formData.append("file", file);
   if (title) formData.append("title", title);
   formData.append("purpose", purpose);
-  const res = await fetch(`${API_BASE}/documents`, { method: "POST", body: formData });
+  const authHeaders = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}/documents`, { method: "POST", body: formData, headers: authHeaders });
   if (!res.ok) throw new Error(`Upload failed: ${res.statusText}`);
   return res.json();
 }
 
 export async function listDocuments(): Promise<DocumentListResponse> {
-  const res = await fetch(`${API_BASE}/documents`);
+  const res = await fetch(`${API_BASE}/documents`, { headers: await getAuthHeaders() });
   if (!res.ok) throw new Error(`Failed to load documents`);
   return res.json();
 }
 
 export async function getDocument(id: string): Promise<Document> {
-  const res = await fetch(`${API_BASE}/documents/${id}`);
+  const res = await fetch(`${API_BASE}/documents/${id}`, { headers: await getAuthHeaders() });
   if (!res.ok) throw new Error(`Document not found`);
   return res.json();
 }
 
 export async function updateDocumentPurpose(id: string, purpose: "pitch" | "rag"): Promise<Document> {
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_BASE}/documents/${id}/purpose`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders },
     body: JSON.stringify({ purpose }),
   });
   if (!res.ok) throw new Error(`Failed to update purpose`);
@@ -52,14 +65,15 @@ export async function updateDocumentPurpose(id: string, purpose: "pitch" | "rag"
 }
 
 export async function deleteDocument(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/documents/${id}`, { method: "DELETE" });
+  const res = await fetch(`${API_BASE}/documents/${id}`, { method: "DELETE", headers: await getAuthHeaders() });
   if (!res.ok) throw new Error(`Delete failed`);
 }
 
 export async function replaceDocument(id: string, file: File): Promise<Document> {
   const formData = new FormData();
   formData.append("file", file);
-  const res = await fetch(`${API_BASE}/documents/${id}`, { method: "PUT", body: formData });
+  const authHeaders = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}/documents/${id}`, { method: "PUT", body: formData, headers: authHeaders });
   if (!res.ok) throw new Error(`Replace failed`);
   return res.json();
 }

@@ -1,4 +1,5 @@
 import type { Citation } from "@/lib/query-api";
+import { getAuthHeaders } from "@/lib/api";
 
 export interface ReviewItem {
   query_id: string;
@@ -24,7 +25,8 @@ export async function fetchReviews(
   status: string = "pending_review"
 ): Promise<ReviewItem[]> {
   const res = await fetch(
-    `${API_BASE}/reviews?status=${encodeURIComponent(status)}`
+    `${API_BASE}/reviews?status=${encodeURIComponent(status)}`,
+    { headers: await getAuthHeaders() }
   );
   if (!res.ok) throw new Error(`Failed to fetch reviews: ${res.statusText}`);
   return res.json();
@@ -34,9 +36,10 @@ export async function submitReview(
   queryId: string,
   action: ReviewAction
 ): Promise<ReviewItem> {
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_BASE}/reviews/${queryId}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders },
     body: JSON.stringify(action),
   });
   if (!res.ok) throw new Error(`Failed to submit review: ${res.statusText}`);

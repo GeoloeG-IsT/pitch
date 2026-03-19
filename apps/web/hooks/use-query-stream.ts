@@ -2,10 +2,11 @@
 
 import { useCallback, useRef, useState } from "react";
 import { createQuery, type Citation } from "@/lib/query-api";
+import { createClient } from "@/lib/supabase/client";
 
 export type QueryStatus = "idle" | "retrieving" | "generating" | "done" | "error";
 
-export function useQueryStream() {
+export function useQueryStream(shareToken?: string) {
   const [answer, setAnswer] = useState("");
   const [status, setStatus] = useState<QueryStatus>("idle");
   const [citations, setCitations] = useState<Citation[]>([]);
@@ -38,7 +39,18 @@ export function useQueryStream() {
       setQueryId(response.query_id);
 
       const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
-      const ws = new WebSocket(`${wsUrl}/api/v1/query/${response.query_id}/stream`);
+      let wsEndpoint = `${wsUrl}/api/v1/query/${response.query_id}/stream`;
+
+      // Authenticate WebSocket via query params
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        wsEndpoint += `?access_token=${session.access_token}`;
+      } else if (shareToken) {
+        wsEndpoint += `?token=${shareToken}`;
+      }
+
+      const ws = new WebSocket(wsEndpoint);
       wsRef.current = ws;
 
       ws.onmessage = (event) => {

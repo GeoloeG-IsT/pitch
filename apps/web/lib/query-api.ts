@@ -19,12 +19,15 @@ export interface QueryResponse {
   review_status: string;
 }
 
+import { getAuthHeaders } from "@/lib/api";
+
 const API_BASE = "/api/v1";
 
 export async function createQuery(question: string): Promise<QueryResponse> {
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_BASE}/query`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders },
     body: JSON.stringify({ question }),
   });
   if (!res.ok) throw new Error(`Query failed: ${res.statusText}`);
