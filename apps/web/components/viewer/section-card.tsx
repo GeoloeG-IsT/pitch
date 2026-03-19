@@ -15,7 +15,8 @@ interface SectionCardProps {
 
 export function SectionCard({ chunk, onInView }: SectionCardProps) {
   const { ref } = useInView({
-    threshold: 0.3,
+    threshold: 0,
+    rootMargin: "-56px 0px 0px 0px", // offset for sticky header (h-14 = 56px)
     onChange: (inView) => onInView?.(chunk.id, inView),
   });
 

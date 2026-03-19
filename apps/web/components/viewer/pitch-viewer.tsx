@@ -56,7 +56,9 @@ export function PitchViewer() {
   const scrollToSection = useCallback((id: string) => {
     const el = document.getElementById(`section-${id}`);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      const headerOffset = 56 + 16; // h-14 (56px) + 16px breathing room
+      const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top, behavior: "smooth" });
       // Brief ring highlight (2s) per UI-SPEC Animation Contract
       el.classList.add("ring-2", "ring-primary/30");
       setTimeout(() => el.classList.remove("ring-2", "ring-primary/30"), 2000);
