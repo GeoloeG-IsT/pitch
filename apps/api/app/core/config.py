@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     supabase_key: str = ""
     supabase_service_role_key: str = ""
     openai_api_key: str = ""
+    cohere_api_key: str = ""
     environment: str = "development"
 
     model_config = SettingsConfigDict(env_file=str(_root / ".env"), extra="ignore")
