@@ -47,11 +47,11 @@ Requirements for the PoC demo. Each maps to roadmap phases.
 
 ### Analytics
 
-- [ ] **ANLYT-01**: Founder can see which investors viewed the pitch and when
-- [ ] **ANLYT-02**: Founder can see time spent per section by each investor
-- [ ] **ANLYT-03**: Founder gets notified when an investor opens the shared link
-- [ ] **ANLYT-04**: Founder can see a log of all questions investors asked
-- [ ] **ANLYT-05**: System flags high-engagement investors based on behavioral signals (5+ min on financials, multiple deep questions)
+- [x] **ANLYT-01**: Founder can see which investors viewed the pitch and when
+- [x] **ANLYT-02**: Founder can see time spent per section by each investor
+- [x] **ANLYT-03**: Founder gets notified when an investor opens the shared link
+- [x] **ANLYT-04**: Founder can see a log of all questions investors asked
+- [x] **ANLYT-05**: System flags high-engagement investors based on behavioral signals (5+ min on financials, multiple deep questions)
 
 ### Live Pitch Mode
 
@@ -138,11 +138,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-04 | Phase 6 | Complete |
 | MGMT-01 | Phase 2 | Complete |
 | MGMT-02 | Phase 2 | Complete |
-| ANLYT-01 | Phase 7 | Pending |
-| ANLYT-02 | Phase 7 | Pending |
-| ANLYT-03 | Phase 7 | Pending |
-| ANLYT-04 | Phase 7 | Pending |
-| ANLYT-05 | Phase 7 | Pending |
+| ANLYT-01 | Phase 7 | Complete |
+| ANLYT-02 | Phase 7 | Complete |
+| ANLYT-03 | Phase 7 | Complete |
+| ANLYT-04 | Phase 7 | Complete |
+| ANLYT-05 | Phase 7 | Complete |
 | LIVE-01 | Phase 8 | Pending |
 | LIVE-02 | Phase 8 | Pending |
 | DEMO-01 | Phase 1 | Complete |
