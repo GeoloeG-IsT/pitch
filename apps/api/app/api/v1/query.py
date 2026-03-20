@@ -47,10 +47,17 @@ async def stream_query(
     """Stream AI answer tokens over WebSocket."""
     # Authenticate via JWT access_token or share token
     if access_token:
+        import json as _json
         import jwt as pyjwt
+        import httpx
         from app.core.config import settings
         try:
-            pyjwt.decode(access_token, settings.supabase_jwt_secret, algorithms=["HS256"], audience="authenticated")
+            try:
+                pyjwt.decode(access_token, settings.supabase_jwt_secret, algorithms=["HS256"], audience="authenticated")
+            except (pyjwt.InvalidSignatureError, pyjwt.InvalidAlgorithmError):
+                jwks = httpx.get(f"{settings.supabase_url}/auth/v1/.well-known/jwks.json").json()
+                public_key = pyjwt.algorithms.ECAlgorithm.from_jwk(_json.dumps(jwks["keys"][0]))
+                pyjwt.decode(access_token, public_key, algorithms=["ES256"], audience="authenticated")
         except pyjwt.InvalidTokenError:
             await websocket.close(code=4001)
             return

@@ -17,13 +17,15 @@ export async function signup(
     return { error: error.message };
   }
 
-  // Create public.users profile with investor role when invite param present, founder otherwise
+  // Create public.users profile — invite links force investor, otherwise use selected role
   if (data.user) {
     const invite = formData.get("invite") as string | null;
+    const selectedRole = formData.get("role") as string | null;
+    const role = invite ? "investor" : (selectedRole || "founder");
     await supabase.from("users").insert({
       id: data.user.id,
       email: data.user.email,
-      role: invite ? "investor" : "founder",
+      role,
     });
   }
 

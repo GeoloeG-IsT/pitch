@@ -39,6 +39,37 @@ export function SignupForm() {
           <input type="hidden" name="invite" value={inviteParam} />
         )}
 
+        {!inviteParam && (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="role">I am a...</Label>
+            <div className="flex gap-3">
+              <label className="flex-1">
+                <input
+                  type="radio"
+                  name="role"
+                  value="founder"
+                  defaultChecked
+                  className="peer sr-only"
+                />
+                <div className="rounded-md border px-3 py-2 text-center text-sm cursor-pointer peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:font-medium hover:bg-muted transition-colors">
+                  Founder
+                </div>
+              </label>
+              <label className="flex-1">
+                <input
+                  type="radio"
+                  name="role"
+                  value="investor"
+                  className="peer sr-only"
+                />
+                <div className="rounded-md border px-3 py-2 text-center text-sm cursor-pointer peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:font-medium hover:bg-muted transition-colors">
+                  Investor
+                </div>
+              </label>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col gap-2">
           <Label htmlFor="email">Email</Label>
           <Input
