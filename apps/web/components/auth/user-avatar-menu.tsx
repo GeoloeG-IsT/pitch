@@ -24,7 +24,7 @@ export function UserAvatarMenu({ user, role }: UserAvatarMenuProps) {
   const router = useRouter();
 
   const initial = (user.email?.[0] ?? "U").toUpperCase();
-  const roleLabel = role === "founder" ? "Founder" : "Investor";
+  const roleLabel = role === "investor" ? "Investor" : "Founder";
 
   async function handleSignOut(e: React.MouseEvent) {
     e.preventDefault();
