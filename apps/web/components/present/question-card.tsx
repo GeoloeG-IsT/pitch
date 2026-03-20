@@ -145,7 +145,7 @@ export function QuestionCard({
           <div className="flex flex-wrap gap-2">
             {question.citations.map((c, i) => (
               <Badge key={i} variant="secondary" className="text-xs">
-                {c}
+                {typeof c === "string" ? c : (c as { document_title?: string }).document_title ?? `Source ${i + 1}`}
               </Badge>
             ))}
           </div>
