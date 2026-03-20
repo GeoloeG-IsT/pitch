@@ -130,11 +130,11 @@ Plans:
   3. Founder receives a notification when an investor opens a shared link
   4. Founder can view a log of all questions investors have asked across sessions
   5. System flags high-engagement investors based on behavioral signals (extended time on financials, multiple deep questions)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
+- [ ] 07-01-PLAN.md -- Database migration, analytics API (event ingestion, aggregation, notifications), backend tests
+- [ ] 07-02-PLAN.md -- Tracking hook, analytics dashboard UI (heatmap, investor table, engagement badges, notifications)
 
 ### Phase 8: Live Pitch Mode
 **Goal**: Founders can present the pitch in real-time while investors ask questions via the Q&A interface, with the founder seeing incoming questions and AI draft answers in a presenter view
@@ -162,5 +162,5 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | 4. Smart Document Viewer | 3/3 | Complete   | 2026-03-19 |
 | 5. Trust + HITL Validation | 0/3 | Not started | - |
 | 6. Auth + Access Control | 4/4 | Complete   | 2026-03-19 |
-| 7. Analytics | 0/0 | Not started | - |
+| 7. Analytics | 0/2 | Not started | - |
 | 8. Live Pitch Mode | 0/0 | Not started | - |
