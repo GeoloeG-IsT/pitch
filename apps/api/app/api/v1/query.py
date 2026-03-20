@@ -5,7 +5,7 @@ import logging
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 
-from app.core.auth import get_current_user, validate_share_token
+from app.core.auth import get_current_user, get_user_or_share_token, validate_share_token
 from app.core.supabase import get_service_client
 from app.models.query import QueryCreate, QueryResponse
 from app.services.query_engine import run_query_pipeline
@@ -16,13 +16,19 @@ router = APIRouter(tags=["query"])
 
 
 @router.get("/queries/history")
-async def get_query_history(user: dict = Depends(get_current_user)):
+async def get_query_history(auth: dict = Depends(get_user_or_share_token)):
     """Return the user's past questions and answers."""
     client = get_service_client()
-    result = (
+    query = (
         client.table("queries")
         .select("id, question, answer, citations, status, created_at, confidence_score, confidence_tier, review_status, founder_answer")
-        .eq("user_id", user["sub"])
+    )
+    if auth["auth_type"] == "share_token":
+        query = query.eq("share_token_id", auth["token_id"])
+    else:
+        query = query.eq("user_id", auth["sub"])
+    result = (
+        query
         .in_("status", ["complete", "error"])
         .order("created_at", desc=False)
         .limit(50)
@@ -46,16 +52,19 @@ async def get_query_history(user: dict = Depends(get_current_user)):
 
 
 @router.post("/query", status_code=201)
-async def create_query(request: QueryCreate, user: dict = Depends(get_current_user)):
+async def create_query(request: QueryCreate, auth: dict = Depends(get_user_or_share_token)):
     """Create a query record. Returns query_id for WebSocket streaming."""
     client = get_service_client()
     insert_data: dict = {
         "question": request.question,
-        "user_id": user["sub"],
         "status": "pending",
     }
-    if hasattr(request, "share_token_id") and request.share_token_id:
-        insert_data["share_token_id"] = request.share_token_id
+    if auth["auth_type"] == "share_token":
+        insert_data["share_token_id"] = auth["token_id"]
+    else:
+        insert_data["user_id"] = auth["sub"]
+        if hasattr(request, "share_token_id") and request.share_token_id:
+            insert_data["share_token_id"] = request.share_token_id
     result = client.table("queries").insert(insert_data).execute()
 
     row = result.data[0]
@@ -145,7 +154,13 @@ async def stream_query(
         if active_session:
             # Live mode: ALL questions route through founder regardless of confidence
             investor_label = "Anonymous"
-            if query_row.get("share_token_id"):
+            if query_row.get("user_id"):
+                try:
+                    user_result = client.table("users").select("email").eq("id", query_row["user_id"]).single().execute()
+                    investor_label = user_result.data.get("email", "Anonymous")
+                except Exception:
+                    pass
+            elif query_row.get("share_token_id"):
                 try:
                     token_result = client.table("share_tokens").select("investor_email").eq("id", query_row["share_token_id"]).single().execute()
                     investor_label = token_result.data.get("investor_email", "Anonymous")
