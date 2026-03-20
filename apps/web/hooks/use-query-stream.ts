@@ -35,7 +35,7 @@ export function useQueryStream(shareToken?: string) {
     setQueryId(null);
 
     try {
-      const response = await createQuery(question);
+      const response = await createQuery(question, shareToken);
       setQueryId(response.query_id);
 
       const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";

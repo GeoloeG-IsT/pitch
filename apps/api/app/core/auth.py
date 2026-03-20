@@ -72,6 +72,41 @@ async def get_optional_user(
         return None
 
 
+async def get_user_or_share_token(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
+    token: str | None = None,
+) -> dict:
+    """Authenticate via JWT Bearer token or share token query param.
+
+    Returns dict with 'auth_type' key:
+    - {"auth_type": "user", "sub": ..., ...} for JWT users
+    - {"auth_type": "share_token", "token_id": ..., "founder_id": ...} for share token
+    """
+    # Try JWT first
+    if credentials is not None:
+        try:
+            user = await get_current_user(credentials)
+            return {**user, "auth_type": "user"}
+        except HTTPException:
+            pass
+
+    # Fall back to share token
+    if token:
+        result = await validate_share_token(token)
+        if result:
+            return {
+                "auth_type": "share_token",
+                "token_id": result["id"],
+                "founder_id": result["founder_id"],
+                "sub": f"share:{result['id']}",
+            }
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Missing or invalid authentication",
+    )
+
+
 async def validate_share_token(token: str) -> dict | None:
     """Validate a share token against the database. Returns token row or None."""
     from datetime import datetime, timezone

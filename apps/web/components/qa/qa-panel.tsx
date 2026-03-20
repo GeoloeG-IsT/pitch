@@ -21,6 +21,7 @@ interface QAPanelProps {
   onInitialQuestionConsumed?: () => void;
   isLiveSession?: boolean;
   onLiveSessionChange?: (isLive: boolean) => void;
+  shareToken?: string;
 }
 
 export function QAPanel({
@@ -33,6 +34,7 @@ export function QAPanel({
   onInitialQuestionConsumed,
   isLiveSession = false,
   onLiveSessionChange,
+  shareToken,
 }: QAPanelProps) {
   const [messages, setMessages] = useState<QAMessage[]>([]);
   const [sectionScope, setSectionScope] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export function QAPanel({
   const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { answer, status, citations, error, confidenceScore, confidenceTier, isQueued, queryId, askQuestion } = useQueryStream();
+  const { answer, status, citations, error, confidenceScore, confidenceTier, isQueued, queryId, askQuestion } = useQueryStream(shareToken);
 
   // Handle real-time notification of approved answers
   const handleAnswerApproved = useCallback(
@@ -96,11 +98,12 @@ export function QAPanel({
     onSessionStarted: handleSessionStarted,
     onSessionEnded: handleSessionEnded,
     onQuestionDismissed: handleQuestionDismissed,
+    shareToken,
   });
 
   // Load previous Q&A history on mount
   useEffect(() => {
-    fetchQueryHistory().then((history) => {
+    fetchQueryHistory(shareToken).then((history) => {
       if (history.length === 0) return;
       const restored: QAMessage[] = history.map((q) => ({
         id: q.query_id,

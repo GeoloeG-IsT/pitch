@@ -78,6 +78,7 @@ export default function PitchPage() {
       trackingShareTokenId={isShareTokenAccess ? tokenId : undefined}
       trackingUserId={!isShareTokenAccess ? user?.id : undefined}
       trackingEnabled={trackingEnabled}
+      shareToken={isShareTokenAccess ? token! : undefined}
     />
   );
 }
