@@ -143,10 +143,11 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Founder can initiate a live pitch session where investors join and ask questions via the Q&A interface in real-time
   2. Founder sees a presenter view showing incoming investor questions alongside AI-drafted answers they can approve or override before publishing
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md -- Backend: DB migration (live_sessions table), sessions API, live-mode query routing, extended WebSocket notifications, tests
+- [ ] 08-02-PLAN.md -- Frontend: Go Live button, presenter view at /present, investor LIVE banner, live-mode Q&A behavior
 
 ## Progress
 
@@ -163,4 +164,4 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | 5. Trust + HITL Validation | 0/3 | Not started | - |
 | 6. Auth + Access Control | 4/4 | Complete   | 2026-03-19 |
 | 7. Analytics | 0/2 | Not started | - |
-| 8. Live Pitch Mode | 0/0 | Not started | - |
+| 8. Live Pitch Mode | 0/2 | Not started | - |
