@@ -35,12 +35,12 @@ class QueryResponse(BaseModel):
 
 
 class ReviewAction(BaseModel):
-    action: Literal["approve", "edit", "reject"]
+    action: Literal["approve", "edit", "reject", "dismiss", "override"]
     edited_answer: str | None = None
 
     @model_validator(mode="after")
     def require_edited_answer(self) -> ReviewAction:
-        if self.action in ("edit", "reject") and not self.edited_answer:
+        if self.action in ("edit", "reject", "override") and not self.edited_answer:
             raise ValueError(
                 f"edited_answer is required when action is '{self.action}'"
             )
