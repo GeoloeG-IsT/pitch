@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { getAuthHeaders } from "@/lib/api";
 
 export interface LiveQuestion {
   queryId: string;
@@ -28,9 +28,8 @@ export function usePresenterStream() {
     let active = true;
 
     async function connect() {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getSession();
-      const accessToken = data.session?.access_token;
+      const { Authorization } = getAuthHeaders() as { Authorization?: string };
+      const accessToken = Authorization?.replace("Bearer ", "");
       if (!accessToken) return;
 
       const wsUrl =

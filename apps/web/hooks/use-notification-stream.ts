@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { getAuthHeaders } from "@/lib/api";
 
 interface NotificationStreamOptions {
   onAnswerApproved: (queryId: string, answer: string, tier: string) => void;
@@ -9,7 +10,7 @@ interface NotificationStreamOptions {
   onQuestionDismissed?: (queryId: string) => void;
 }
 
-export function useNotificationStream(options: NotificationStreamOptions) {
+export function useNotificationStream(options: NotificationStreamOptions & { shareToken?: string }) {
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -21,7 +22,18 @@ export function useNotificationStream(options: NotificationStreamOptions) {
   useEffect(() => {
     function connect() {
       const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
-      const ws = new WebSocket(`${wsUrl}/api/v1/notifications/stream`);
+      let endpoint = `${wsUrl}/api/v1/notifications/stream`;
+
+      // Pass identity so server can track investor count
+      const { Authorization } = getAuthHeaders() as { Authorization?: string };
+      const accessToken = Authorization?.replace("Bearer ", "");
+      if (accessToken) {
+        endpoint += `?access_token=${accessToken}`;
+      } else if (callbackRef.current.shareToken) {
+        endpoint += `?token=${callbackRef.current.shareToken}`;
+      }
+
+      const ws = new WebSocket(endpoint);
       wsRef.current = ws;
 
       ws.onopen = () => {

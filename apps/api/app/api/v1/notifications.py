@@ -64,14 +64,45 @@ async def notify_founder(founder_id: str, message: dict) -> None:
 async def notification_stream(
     websocket: WebSocket,
     token: str | None = Query(None),
+    access_token: str | None = Query(None),
 ):
     """Accept investor WebSocket connections for real-time notifications."""
     await websocket.accept()
     conn_id = str(id(websocket))
     _investor_connections[conn_id] = websocket
 
-    # Resolve investor identity from share token if provided
-    if token:
+    # Resolve investor identity from JWT access_token or share token
+    if access_token:
+        try:
+            import json as _json
+            import jwt as pyjwt
+            import httpx
+            from app.core.config import settings
+
+            try:
+                payload = pyjwt.decode(
+                    access_token,
+                    settings.supabase_jwt_secret,
+                    algorithms=["HS256"],
+                    audience="authenticated",
+                )
+            except (pyjwt.InvalidSignatureError, pyjwt.InvalidAlgorithmError):
+                jwks = httpx.get(f"{settings.supabase_url}/auth/v1/.well-known/jwks.json").json()
+                public_key = pyjwt.algorithms.ECAlgorithm.from_jwk(_json.dumps(jwks["keys"][0]))
+                payload = pyjwt.decode(
+                    access_token,
+                    public_key,
+                    algorithms=["ES256"],
+                    audience="authenticated",
+                )
+            email = payload.get("email")
+            if email:
+                _investor_identities[conn_id] = email
+                # Notify all founders of updated investor count
+                await _notify_investor_count_change()
+        except Exception:
+            pass
+    elif token:
         try:
             from app.core.supabase import get_service_client
 
