@@ -28,16 +28,14 @@ export function useAuth(): AuthState {
         setState({ user: session.user, role: null, loading: false });
 
         try {
-          const { data: profile } = await supabase
-            .from("users")
-            .select("role")
-            .eq("id", session.user.id)
-            .single();
-          if (profile?.role) {
-            setState({ user: session.user, role: profile.role, loading: false });
+          const res = await fetch("/api/me");
+          if (res.ok) {
+            const { role } = await res.json();
+            setState({ user: session.user, role: role ?? "founder", loading: false });
           }
         } catch {
-          // Role fetch failed — user still shown, role stays null
+          // Role fetch failed — default to founder
+          setState({ user: session.user, role: "founder", loading: false });
         }
       } else {
         setState({ user: null, role: null, loading: false });
