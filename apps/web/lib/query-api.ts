@@ -17,23 +17,27 @@ export interface QueryResponse {
   confidence_score: number | null;
   confidence_tier: string | null;
   review_status: string;
+  founder_answer?: string | null;
 }
 
 import { getAuthHeaders } from "@/lib/api";
 
 const API_BASE = "/api/v1";
 
-export async function fetchQueryHistory(): Promise<QueryResponse[]> {
-  const res = await fetch(`${API_BASE}/queries/history`, {
-    headers: getAuthHeaders(),
+export async function fetchQueryHistory(shareToken?: string): Promise<QueryResponse[]> {
+  const authHeaders = getAuthHeaders() as Record<string, string>;
+  const params = !authHeaders.Authorization && shareToken ? `?token=${encodeURIComponent(shareToken)}` : "";
+  const res = await fetch(`${API_BASE}/queries/history${params}`, {
+    headers: authHeaders,
   });
   if (!res.ok) return [];
   return res.json();
 }
 
-export async function createQuery(question: string): Promise<QueryResponse> {
-  const authHeaders = getAuthHeaders();
-  const res = await fetch(`${API_BASE}/query`, {
+export async function createQuery(question: string, shareToken?: string): Promise<QueryResponse> {
+  const authHeaders = getAuthHeaders() as Record<string, string>;
+  const params = !authHeaders.Authorization && shareToken ? `?token=${encodeURIComponent(shareToken)}` : "";
+  const res = await fetch(`${API_BASE}/query${params}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeaders },
     body: JSON.stringify({ question }),
