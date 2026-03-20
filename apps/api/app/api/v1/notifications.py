@@ -123,6 +123,11 @@ async def notification_stream(
         except Exception:
             pass
 
+    # Track anonymous connections (no identity resolved)
+    if conn_id not in _investor_identities:
+        _investor_identities[conn_id] = f"anonymous-{conn_id}"
+        await _notify_investor_count_change()
+
     try:
         while True:
             await websocket.receive_text()  # keep-alive
@@ -143,8 +148,18 @@ async def _notify_investor_count_change() -> None:
 
 
 def get_connected_investors() -> list[str]:
-    """Return unique investor emails of currently connected investors."""
-    return list(set(_investor_identities.values()))
+    """Return unique investor labels (emails or 'Anonymous') of currently connected investors."""
+    unique = set()
+    anon_count = 0
+    for identity in _investor_identities.values():
+        if identity.startswith("anonymous-"):
+            anon_count += 1
+        else:
+            unique.add(identity)
+    # Show anonymous viewers as numbered entries
+    for i in range(1, anon_count + 1):
+        unique.add(f"Anonymous viewer {i}")
+    return list(unique)
 
 
 async def broadcast_approved_answer(
