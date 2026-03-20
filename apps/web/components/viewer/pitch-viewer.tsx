@@ -12,16 +12,43 @@ import { DocumentGroup } from "./document-group";
 import { FloatingInput } from "@/components/viewer/floating-input";
 import { QAPanel } from "@/components/qa/qa-panel";
 import { useActiveSection } from "@/hooks/use-active-section";
+import { useTracking } from "@/hooks/use-tracking";
 
-export function PitchViewer() {
+interface PitchViewerProps {
+  trackingFounderId?: string;
+  trackingShareTokenId?: string;
+  trackingUserId?: string;
+  trackingEnabled?: boolean;
+}
+
+export function PitchViewer({
+  trackingFounderId,
+  trackingShareTokenId,
+  trackingUserId,
+  trackingEnabled,
+}: PitchViewerProps) {
   const [data, setData] = useState<PitchResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { activeId, handleInView, forceActive } = useActiveSection();
+  const { trackSectionVisibility } = useTracking({
+    founderId: trackingFounderId || "",
+    shareTokenId: trackingShareTokenId,
+    userId: trackingUserId,
+    enabled: trackingEnabled ?? false,
+  });
   const [tocOpen, setTocOpen] = useState(false);
   const [tocCollapsed, setTocCollapsed] = useState(false);
   const [qaOpen, setQaOpen] = useState(false);
   const [initialQuestion, setInitialQuestion] = useState<string | null>(null);
+
+  const handleSectionInView = useCallback(
+    (id: string, inView: boolean) => {
+      handleInView(id, inView);
+      trackSectionVisibility(id, inView);
+    },
+    [handleInView, trackSectionVisibility],
+  );
 
   useEffect(() => {
     fetchPitch()
@@ -153,7 +180,7 @@ export function PitchViewer() {
               <DocumentGroup
                 key={doc.id}
                 document={doc}
-                onSectionInView={handleInView}
+                onSectionInView={handleSectionInView}
               />
             ))}
           </div>

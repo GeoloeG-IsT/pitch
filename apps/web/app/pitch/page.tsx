@@ -10,9 +10,11 @@ export default function PitchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
-  const { user, loading: authLoading } = useAuth();
+  const { user, role, loading: authLoading } = useAuth();
   const [tokenValid, setTokenValid] = useState<boolean | null>(null);
   const [tokenLoading, setTokenLoading] = useState(false);
+  const [tokenId, setTokenId] = useState<string | undefined>();
+  const [founderId, setFounderId] = useState<string | undefined>();
 
   useEffect(() => {
     if (!token) {
@@ -25,6 +27,8 @@ export default function PitchPage() {
       .then((result) => {
         if (result.valid) {
           setTokenValid(true);
+          setTokenId(result.token_id);
+          setFounderId(result.founder_id);
         } else {
           // Invalid/expired/revoked token -- redirect to access-expired
           router.replace("/access-expired");
@@ -56,6 +60,24 @@ export default function PitchPage() {
     return null;
   }
 
+  // Determine tracking configuration
+  // Share token access: track with token info
+  // Authenticated investor: track with user id
+  // Founder: tracking disabled
+  const isShareTokenAccess = !!token && tokenValid;
+  const isFounder = role === "founder";
+
+  const trackingEnabled = isShareTokenAccess
+    ? true
+    : !isFounder && role === "investor";
+
   // Valid token OR authenticated user -> show pitch
-  return <PitchViewer />;
+  return (
+    <PitchViewer
+      trackingFounderId={isShareTokenAccess ? founderId : user?.id}
+      trackingShareTokenId={isShareTokenAccess ? tokenId : undefined}
+      trackingUserId={!isShareTokenAccess ? user?.id : undefined}
+      trackingEnabled={trackingEnabled}
+    />
+  );
 }
