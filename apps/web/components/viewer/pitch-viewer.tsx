@@ -11,6 +11,7 @@ import { TOCSidebar } from "./toc-sidebar";
 import { DocumentGroup } from "./document-group";
 import { FloatingInput } from "@/components/viewer/floating-input";
 import { QAPanel } from "@/components/qa/qa-panel";
+import { LiveBanner } from "@/components/qa/live-banner";
 import { useActiveSection } from "@/hooks/use-active-section";
 import { useTracking } from "@/hooks/use-tracking";
 
@@ -19,6 +20,7 @@ interface PitchViewerProps {
   trackingShareTokenId?: string;
   trackingUserId?: string;
   trackingEnabled?: boolean;
+  shareToken?: string;
 }
 
 export function PitchViewer({
@@ -26,6 +28,7 @@ export function PitchViewer({
   trackingShareTokenId,
   trackingUserId,
   trackingEnabled,
+  shareToken,
 }: PitchViewerProps) {
   const [data, setData] = useState<PitchResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,6 +43,7 @@ export function PitchViewer({
   const [tocOpen, setTocOpen] = useState(false);
   const [tocCollapsed, setTocCollapsed] = useState(false);
   const [qaOpen, setQaOpen] = useState(false);
+  const [isLiveSession, setIsLiveSession] = useState(false);
   const [initialQuestion, setInitialQuestion] = useState<string | null>(null);
 
   const handleSectionInView = useCallback(
@@ -148,6 +152,7 @@ export function PitchViewer({
 
   return (
     <div className="min-h-screen bg-muted">
+      <LiveBanner visible={isLiveSession} />
       <div className="lg:hidden flex items-center px-4 py-2">
         <Button
           variant="ghost"
@@ -206,6 +211,9 @@ export function PitchViewer({
         onScrollToSection={scrollToSection}
         initialQuestion={initialQuestion}
         onInitialQuestionConsumed={() => setInitialQuestion(null)}
+        isLiveSession={isLiveSession}
+        onLiveSessionChange={setIsLiveSession}
+        shareToken={shareToken}
       />
     </div>
   );
