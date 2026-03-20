@@ -11,6 +11,7 @@ from app.api.v1.notifications import router as notifications_router
 from app.api.v1.pitch import router as pitch_router
 from app.api.v1.query import router as query_router
 from app.api.v1.reviews import router as reviews_router
+from app.api.v1.sessions import router as sessions_router
 from app.core.config import settings
 
 # Expose OpenAI key to libraries that read os.environ directly (e.g. LlamaIndex)
@@ -38,3 +39,4 @@ app.include_router(query_router, prefix="/api/v1")
 app.include_router(pitch_router, prefix="/api/v1")
 app.include_router(reviews_router, prefix="/api/v1")
 app.include_router(notifications_router, prefix="/api/v1")
+app.include_router(sessions_router, prefix="/api/v1")

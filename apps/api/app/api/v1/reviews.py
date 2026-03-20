@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.api.v1.notifications import broadcast_approved_answer
+from app.api.v1.notifications import broadcast_approved_answer, broadcast_dismissed_question
 from app.core.auth import get_current_user
 from app.core.supabase import get_service_client
 from app.models.query import ReviewAction, ReviewItem
@@ -88,6 +88,12 @@ async def update_review(query_id: str, body: ReviewAction, user: dict = Depends(
         update_data["review_status"] = "rejected"
         update_data["founder_answer"] = body.edited_answer
         update_data["answer"] = body.edited_answer
+    elif body.action == "override":
+        update_data["review_status"] = "edited"
+        update_data["founder_answer"] = body.edited_answer
+        update_data["answer"] = body.edited_answer
+    elif body.action == "dismiss":
+        update_data["review_status"] = "dismissed"
 
     updated = (
         client.table("queries")
@@ -98,8 +104,11 @@ async def update_review(query_id: str, body: ReviewAction, user: dict = Depends(
     updated_row = updated.data[0] if updated.data else {**row, **update_data}
 
     # Broadcast to connected investors
-    answer_text = updated_row.get("founder_answer") or updated_row.get("answer", "")
-    await broadcast_approved_answer(query_id, answer_text, "verified")
+    if body.action == "dismiss":
+        await broadcast_dismissed_question(query_id)
+    else:
+        answer_text = updated_row.get("founder_answer") or updated_row.get("answer", "")
+        await broadcast_approved_answer(query_id, answer_text, "verified")
 
     return ReviewItem(
         query_id=updated_row.get("id", query_id),

@@ -132,8 +132,52 @@ async def stream_query(
             send_message=send_message,
         )
 
+        # Check for active live session (overrides confidence-based routing)
+        from app.api.v1.sessions import _active_sessions
+
+        active_session = None
+        active_founder_id = None
+        for fid, session_data in _active_sessions.items():
+            active_session = session_data
+            active_founder_id = fid
+            break  # PoC: single-tenant, at most one active session
+
+        if active_session:
+            # Live mode: ALL questions route through founder regardless of confidence
+            investor_label = "Anonymous"
+            if query_row.get("share_token_id"):
+                try:
+                    token_result = client.table("share_tokens").select("investor_email").eq("id", query_row["share_token_id"]).single().execute()
+                    investor_label = token_result.data.get("investor_email", "Anonymous")
+                except Exception:
+                    pass
+
+            client.table("queries").update({
+                "answer": answer,
+                "citations": [c.model_dump() for c in citations],
+                "status": "queued",
+                "confidence_score": confidence_score,
+                "confidence_tier": confidence_tier,
+                "review_status": "pending_review",
+                "live_session_id": active_session["id"],
+            }).eq("id", query_id).execute()
+
+            # Notify founder's presenter view
+            from app.api.v1.notifications import notify_founder
+
+            await notify_founder(active_founder_id, {
+                "type": "new_live_question",
+                "query_id": query_id,
+                "question": query_row["question"],
+                "investor_label": investor_label,
+                "ai_draft": answer,
+                "citations": [c.model_dump() for c in citations],
+            })
+
+            await websocket.send_json({"type": "queued", "query_id": query_id})
+
         # Determine routing based on confidence tier
-        if confidence_tier in ("low", "moderate"):
+        elif confidence_tier in ("low", "moderate"):
             # Low/moderate-confidence: queue for founder review
             client.table("queries").update({
                 "answer": answer,
