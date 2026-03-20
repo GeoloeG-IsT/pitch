@@ -5,6 +5,7 @@ import { ArrowLeft, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQueryStream } from "@/hooks/use-query-stream";
 import { useNotificationStream } from "@/hooks/use-notification-stream";
+import { fetchQueryHistory } from "@/lib/query-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionContextChip } from "./section-context-chip";
@@ -60,6 +61,28 @@ export function QAPanel({
   );
 
   useNotificationStream(handleAnswerApproved);
+
+  // Load previous Q&A history on mount
+  useEffect(() => {
+    fetchQueryHistory().then((history) => {
+      if (history.length === 0) return;
+      const restored: QAMessage[] = history.map((q) => ({
+        id: q.query_id,
+        queryId: q.query_id,
+        question: q.question.replace(/^\[Context: [^\]]+\] /, ""),
+        answer: q.founder_answer || q.answer || "",
+        citations: q.citations || [],
+        status: "done" as const,
+        error: null,
+        sectionContext: null,
+        confidenceScore: q.confidence_score,
+        confidenceTier: q.confidence_tier,
+        isQueued: false,
+        isVerified: q.review_status === "approved",
+      }));
+      setMessages((prev) => prev.length === 0 ? restored : prev);
+    });
+  }, []);
 
   // Detect mobile
   useEffect(() => {

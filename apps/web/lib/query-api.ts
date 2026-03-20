@@ -23,6 +23,14 @@ import { getAuthHeaders } from "@/lib/api";
 
 const API_BASE = "/api/v1";
 
+export async function fetchQueryHistory(): Promise<QueryResponse[]> {
+  const res = await fetch(`${API_BASE}/queries/history`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export async function createQuery(question: string): Promise<QueryResponse> {
   const authHeaders = getAuthHeaders();
   const res = await fetch(`${API_BASE}/query`, {

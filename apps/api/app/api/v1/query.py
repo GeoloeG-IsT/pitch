@@ -15,6 +15,36 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["query"])
 
 
+@router.get("/queries/history")
+async def get_query_history(user: dict = Depends(get_current_user)):
+    """Return the user's past questions and answers."""
+    client = get_service_client()
+    result = (
+        client.table("queries")
+        .select("id, question, answer, citations, status, created_at, confidence_score, confidence_tier, review_status, founder_answer")
+        .eq("user_id", user["sub"])
+        .in_("status", ["complete", "error"])
+        .order("created_at", desc=False)
+        .limit(50)
+        .execute()
+    )
+    return [
+        QueryResponse(
+            query_id=row["id"],
+            question=row["question"],
+            answer=row.get("answer"),
+            citations=row.get("citations") or [],
+            status=row["status"],
+            created_at=row.get("created_at"),
+            confidence_score=row.get("confidence_score"),
+            confidence_tier=row.get("confidence_tier"),
+            review_status=row.get("review_status", "auto_published"),
+            founder_answer=row.get("founder_answer"),
+        )
+        for row in result.data
+    ]
+
+
 @router.post("/query", status_code=201)
 async def create_query(request: QueryCreate, user: dict = Depends(get_current_user)):
     """Create a query record. Returns query_id for WebSocket streaming."""
