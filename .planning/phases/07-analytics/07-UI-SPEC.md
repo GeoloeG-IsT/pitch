@@ -34,12 +34,12 @@ Declared values (must be multiples of 4):
 | xs | 4px | Icon gaps, badge internal padding |
 | sm | 8px | Table cell padding, compact element spacing |
 | md | 16px | Card padding, default element spacing |
-| lg | 24px | Section padding, expanded row content inset |
-| xl | 32px | Tab content top margin (mt-6 = 24px, kept consistent with existing dashboard) |
+| lg | 24px | Section padding, expanded row content inset, tab content top margin (`mt-6`) |
+| xl | 32px | Heatmap card bottom margin separating it from investor table card |
 | 2xl | 48px | Empty state vertical padding |
 | 3xl | 64px | Not used this phase |
 
-Exceptions: Tab content uses `mt-6` (24px) to match existing dashboard Reviews/Access tab spacing.
+Exceptions: Tab content uses `mt-6` (24px = lg token) to match existing dashboard Reviews/Access tab spacing.
 
 ---
 
@@ -48,7 +48,7 @@ Exceptions: Tab content uses `mt-6` (24px) to match existing dashboard Reviews/A
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 (regular) | 1.5 |
-| Label | 12px | 500 (medium) | 1.4 |
+| Label | 12px | 400 (regular) | 1.4 |
 | Heading | 18px | 600 (semibold) | 1.2 |
 | Display | 28px | 600 (semibold) | 1.2 |
 
@@ -86,6 +86,12 @@ Accent reserved for:
 | Scroll 100% | `var(--color-chart-2)` / hsl(173 58% 39%) | Scroll depth indicator complete |
 
 Heatmap color scale: linear interpolation from `--color-muted` (0 seconds) through `--color-chart-4` (median) to `--color-chart-1` (max). Use 5-stop discrete scale, not continuous gradient, for accessibility.
+
+---
+
+## Visual Hierarchy
+
+Primary focal point: the InvestorTable card is the primary visual anchor of the Analytics tab -- it occupies the majority of viewport height and contains the actionable engagement data. The SectionHeatmap card sits above it as a compact at-a-glance summary that orients the founder before they scan individual investor rows.
 
 ---
 
