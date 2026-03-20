@@ -43,6 +43,7 @@
   --color-confidence-moderate: hsl(38 92% 50%);
   --color-confidence-low: hsl(0 84% 60%);
   --color-verified: hsl(142 71% 45%);
+  --color-live: 0 84% 60%;
   --font-sans: var(--font-sans);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -90,6 +91,7 @@
   --color-confidence-moderate: hsl(38 92% 40%);
   --color-confidence-low: hsl(0 63% 31%);
   --color-verified: hsl(142 71% 35%);
+  --color-live: 0 63% 50%;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

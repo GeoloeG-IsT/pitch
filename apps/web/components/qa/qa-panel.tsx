@@ -60,7 +60,7 @@ export function QAPanel({
     []
   );
 
-  useNotificationStream(handleAnswerApproved);
+  useNotificationStream({ onAnswerApproved: handleAnswerApproved });
 
   // Load previous Q&A history on mount
   useEffect(() => {

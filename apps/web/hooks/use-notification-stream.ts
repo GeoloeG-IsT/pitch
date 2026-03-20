@@ -2,16 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function useNotificationStream(
-  onAnswerApproved: (queryId: string, answer: string, tier: string) => void
-) {
+interface NotificationStreamOptions {
+  onAnswerApproved: (queryId: string, answer: string, tier: string) => void;
+  onSessionStarted?: () => void;
+  onSessionEnded?: () => void;
+  onQuestionDismissed?: (queryId: string) => void;
+}
+
+export function useNotificationStream(options: NotificationStreamOptions) {
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const callbackRef = useRef(onAnswerApproved);
+  const callbackRef = useRef(options);
 
   // Keep callback ref current without triggering reconnects
-  callbackRef.current = onAnswerApproved;
+  callbackRef.current = options;
 
   useEffect(() => {
     function connect() {
@@ -26,7 +31,17 @@ export function useNotificationStream(
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if (msg.type === "answer_approved") {
-          callbackRef.current(msg.query_id, msg.answer, msg.confidence_tier);
+          callbackRef.current.onAnswerApproved(
+            msg.query_id,
+            msg.answer,
+            msg.confidence_tier
+          );
+        } else if (msg.type === "session_started") {
+          callbackRef.current.onSessionStarted?.();
+        } else if (msg.type === "session_ended") {
+          callbackRef.current.onSessionEnded?.();
+        } else if (msg.type === "question_dismissed") {
+          callbackRef.current.onQuestionDismissed?.(msg.query_id);
         }
       };
 

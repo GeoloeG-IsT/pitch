@@ -11,8 +11,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReviewQueue } from "@/components/dashboard/review-queue";
 import { ReviewHistory } from "@/components/dashboard/review-history";
+import { GoLiveButton } from "@/components/dashboard/go-live-button";
+import { useLiveSession } from "@/hooks/use-live-session";
 
 export function ValidationDashboard() {
+  const liveSession = useLiveSession();
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [historyReviews, setHistoryReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +68,10 @@ export function ValidationDashboard() {
   return (
     <div className="bg-muted min-h-screen">
       <div className="max-w-4xl mx-auto px-4 py-16">
-        <h1 className="text-3xl font-semibold mb-8">Validation Dashboard</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-semibold">Validation Dashboard</h1>
+          <GoLiveButton {...liveSession} />
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
