@@ -1,7 +1,7 @@
 """JWT validation dependency for FastAPI endpoints."""
 from __future__ import annotations
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
 
@@ -74,7 +74,7 @@ async def get_optional_user(
 
 async def get_user_or_share_token(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
-    token: str | None = None,
+    token: str | None = Query(None),
 ) -> dict:
     """Authenticate via JWT Bearer token or share token query param.
 
