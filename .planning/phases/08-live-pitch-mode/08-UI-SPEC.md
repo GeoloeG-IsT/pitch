@@ -130,7 +130,7 @@ None. All required primitives already exist in the project.
 | PresenterView | Full-page layout for /present: header with session controls + scrollable question feed |
 | LiveHeader | Presenter header: "Live Q&A" title, connected investor count with dropdown, "End Session" button |
 | QuestionCard | Card showing: investor identity, question text, AI draft answer, four action buttons (Approve, Edit, Override, Dismiss) |
-| OverrideEditor | Textarea replacing the AI draft answer when founder clicks Override, with "Publish Answer" and "Cancel" buttons |
+| OverrideEditor | Textarea replacing the AI draft answer when founder clicks Override, with "Publish Answer" and "Keep AI Draft" buttons |
 | GoLiveButton | Toggle button on /dashboard that opens confirmation dialog to start/end a live session |
 | LiveBanner | Persistent banner at top of pitch viewer during active sessions: red background, pulse dot, "LIVE" text |
 | InvestorCountDropdown | Header element showing "N investors connected" with dropdown listing investor identities |
@@ -245,8 +245,8 @@ None. All required primitives already exist in the project.
 - While AI draft is generating: skeleton pulse in the answer area, action buttons disabled
 - Once draft is ready: answer text fades in (200ms), action buttons become active
 - **Approve**: publishes AI draft as-is to investor, card animates out (fade + collapse, 300ms)
-- **Edit**: answer text transforms into Textarea (InlineEditor), action row changes to "Save & Publish" (primary) + "Cancel" (ghost)
-- **Override**: AI draft area clears, replaced by empty Textarea (OverrideEditor) with placeholder "Write your answer...", action row changes to "Publish Answer" (primary) + "Cancel" (ghost)
+- **Edit**: answer text transforms into Textarea (InlineEditor), action row changes to "Save & Publish" (primary) + "Discard Edit" (ghost)
+- **Override**: AI draft area clears, replaced by empty Textarea (OverrideEditor) with placeholder "Write your answer...", action row changes to "Publish Answer" (primary) + "Keep AI Draft" (ghost)
 - **Dismiss**: card animates out (fade + collapse, 300ms), investor sees dismissal message, toast "Question dismissed"
 
 ### Investor Live Experience
@@ -300,10 +300,10 @@ None. All required primitives already exist in the project.
 | Question card AI draft label | "AI Draft" |
 | Question card generating state | "Generating draft answer..." |
 | Edit save button | "Save & Publish" |
-| Edit cancel button | "Cancel" |
+| Edit cancel button | "Discard Edit" |
 | Override placeholder | "Write your answer..." |
 | Override submit button | "Publish Answer" |
-| Override cancel button | "Cancel" |
+| Override cancel button | "Keep AI Draft" |
 | Dismiss button | "Dismiss" |
 | LIVE banner text | "LIVE" |
 | LIVE banner subtitle | "Your questions are being reviewed by the presenter" |
