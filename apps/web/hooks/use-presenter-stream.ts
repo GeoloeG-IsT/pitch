@@ -53,7 +53,11 @@ export function usePresenterStream() {
               createdAt: new Date().toISOString(),
               status: msg.ai_draft ? "ready" : "pending",
             };
-            setQuestions((prev) => [lq, ...prev]);
+            setQuestions((prev) =>
+              prev.some((q) => q.queryId === lq.queryId)
+                ? prev
+                : [lq, ...prev]
+            );
           } else if (msg.type === "investor_count") {
             setInvestorCount(msg.count);
             setInvestors(msg.investors ?? []);
