@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: All phases complete. Project v1.0 PoC delivered.
-last_updated: "2026-03-20T09:28:26.738Z"
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-20T10:01:30.147Z"
 last_activity: 2026-03-20 -- Verified and completed 08-02 (Live Pitch Mode Frontend)
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 21
-  completed_plans: 21
+  total_phases: 9
+  completed_phases: 9
+  total_plans: 22
+  completed_plans: 22
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Investors can ask natural language questions about any aspect of a startup's pitch and get accurate, source-cited answers instantly, without the founder needing to be in the room.
-**Current focus:** All 8 phases complete. v1.0 PoC delivered and verified.
+**Current focus:** All 9 phases complete. v1.0 PoC delivered, verified, and polished.
 
 ## Current Position
 
-Phase: 8 of 8 (Live Pitch Mode)
-Plan: 2 of 2 in current phase (08-02 verified and complete)
+Phase: 9 of 9 (Polish: Citation Clicks and Shared-Types Cleanup)
+Plan: 1 of 1 in current phase (09-01 complete)
 Status: All Phases Complete
-Last activity: 2026-03-20 -- Verified and completed 08-02 (Live Pitch Mode Frontend)
+Last activity: 2026-03-20 -- Completed 09-01 (shared-types removal and audit update)
 
 Progress: [██████████] 100%
 
@@ -70,6 +70,7 @@ Progress: [██████████] 100%
 | Phase 07 P02 | 4min | 2 tasks | 12 files |
 | Phase 08 P01 | 6min | 2 tasks | 9 files |
 | Phase 08 P02 | 20min | 3 tasks | 24 files |
+| Phase 09 P01 | 3min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,7 @@ Recent decisions affecting current work:
 - [Phase 08]: GoLiveButton uses Dialog (start) / AlertDialog (end) for different confirmation severity
 - [Phase 08]: Server-side /api/me route added to work around WSL2 Supabase direct-call hanging
 - [Phase 08]: Cookie-based getAuthHeaders for presenter WebSocket on WSL2
+- [Phase 09]: Pre-existing mypy errors in apps/api are out of scope (not caused by shared-types removal)
 
 ### Roadmap Evolution
 
@@ -161,6 +163,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T09:45:00Z
-Stopped at: All phases complete. Project v1.0 PoC delivered.
+Last session: 2026-03-20T10:01:30.144Z
+Stopped at: Completed 09-01-PLAN.md
 Resume file: None

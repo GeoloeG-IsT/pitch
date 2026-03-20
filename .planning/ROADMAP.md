@@ -171,7 +171,7 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 **Goal:** Verify citation click-to-scroll is working (fixed in commit 5a6431c) and remove orphaned packages/shared-types package
 **Requirements**: TECH-DEBT-01, TECH-DEBT-02
 **Depends on:** Phase 8
-**Plans:** 1 plans
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 09-01-PLAN.md -- Verify citation clicks, remove shared-types package, update audit doc
