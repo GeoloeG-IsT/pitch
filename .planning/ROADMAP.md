@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 5: Trust + HITL Validation** - Confidence scoring, answer routing, and founder review dashboard
 - [x] **Phase 6: Auth + Access Control** - Authentication, RBAC, shareable links, and access revocation (completed 2026-03-19)
 - [ ] **Phase 7: Analytics** - Investor engagement tracking, per-section analytics, and behavioral signals
-- [ ] **Phase 8: Live Pitch Mode** - Real-time presenter view with live investor Q&A
+- [x] **Phase 8: Live Pitch Mode** - Real-time presenter view with live investor Q&A (completed 2026-03-20)
 
 ## Phase Details
 
@@ -146,8 +146,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 08-01-PLAN.md -- Backend: DB migration (live_sessions table), sessions API, live-mode query routing, extended WebSocket notifications, tests
-- [ ] 08-02-PLAN.md -- Frontend: Go Live button, presenter view at /present, investor LIVE banner, live-mode Q&A behavior
+- [x] 08-01-PLAN.md -- Backend: DB migration (live_sessions table), sessions API, live-mode query routing, extended WebSocket notifications, tests
+- [x] 08-02-PLAN.md -- Frontend: Go Live button, presenter view at /present, investor LIVE banner, live-mode Q&A behavior
 
 ## Progress
 
@@ -164,4 +164,4 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | 5. Trust + HITL Validation | 0/3 | Not started | - |
 | 6. Auth + Access Control | 4/4 | Complete   | 2026-03-19 |
 | 7. Analytics | 0/2 | Not started | - |
-| 8. Live Pitch Mode | 0/2 | Not started | - |
+| 8. Live Pitch Mode | 2/2 | Complete   | 2026-03-20 |
