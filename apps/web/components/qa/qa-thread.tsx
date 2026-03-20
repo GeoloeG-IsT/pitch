@@ -9,6 +9,7 @@ import { CitationList } from "@/components/query/citation-list";
 import { ConfidenceBadge } from "@/components/confidence-badge";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { VerificationPlaceholder } from "@/components/qa/verification-placeholder";
+import { LivePlaceholder } from "@/components/qa/live-placeholder";
 
 export interface QAMessage {
   id: string;
@@ -23,6 +24,8 @@ export interface QAMessage {
   isQueued: boolean;
   isVerified: boolean;
   queryId?: string | null;
+  isLiveReviewing?: boolean;
+  isDismissed?: boolean;
 }
 
 interface QAThreadProps {
@@ -68,7 +71,11 @@ export function QAThread({ messages, onCitationClick }: QAThreadProps) {
 
             {/* Answer area */}
             <div className="mr-8 transition-opacity duration-300">
-              {msg.status === "retrieving" ? (
+              {msg.isDismissed ? (
+                <LivePlaceholder status="dismissed" />
+              ) : msg.isLiveReviewing ? (
+                <LivePlaceholder status="reviewing" />
+              ) : msg.status === "retrieving" ? (
                 <p className="text-sm text-muted-foreground animate-pulse">
                   Thinking...
                 </p>

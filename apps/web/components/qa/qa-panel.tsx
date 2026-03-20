@@ -19,6 +19,8 @@ interface QAPanelProps {
   onScrollToSection: (sectionId: string) => void;
   initialQuestion?: string | null;
   onInitialQuestionConsumed?: () => void;
+  isLiveSession?: boolean;
+  onLiveSessionChange?: (isLive: boolean) => void;
 }
 
 export function QAPanel({
@@ -29,6 +31,8 @@ export function QAPanel({
   onScrollToSection,
   initialQuestion,
   onInitialQuestionConsumed,
+  isLiveSession = false,
+  onLiveSessionChange,
 }: QAPanelProps) {
   const [messages, setMessages] = useState<QAMessage[]>([]);
   const [sectionScope, setSectionScope] = useState<string | null>(null);
@@ -49,6 +53,7 @@ export function QAPanel({
               ...msg,
               isQueued: false,
               isVerified: true,
+              isLiveReviewing: false,
               answer: approvedAnswer,
               status: "done" as const,
             };
@@ -60,7 +65,38 @@ export function QAPanel({
     []
   );
 
-  useNotificationStream({ onAnswerApproved: handleAnswerApproved });
+  const handleSessionStarted = useCallback(() => {
+    onLiveSessionChange?.(true);
+  }, [onLiveSessionChange]);
+
+  const handleSessionEnded = useCallback(() => {
+    onLiveSessionChange?.(false);
+  }, [onLiveSessionChange]);
+
+  const handleQuestionDismissed = useCallback(
+    (dismissedQueryId: string) => {
+      setMessages((prev) =>
+        prev.map((msg) => {
+          if (msg.queryId === dismissedQueryId) {
+            return {
+              ...msg,
+              isDismissed: true,
+              status: "done" as const,
+            };
+          }
+          return msg;
+        })
+      );
+    },
+    []
+  );
+
+  useNotificationStream({
+    onAnswerApproved: handleAnswerApproved,
+    onSessionStarted: handleSessionStarted,
+    onSessionEnded: handleSessionEnded,
+    onQuestionDismissed: handleQuestionDismissed,
+  });
 
   // Load previous Q&A history on mount
   useEffect(() => {
@@ -109,13 +145,14 @@ export function QAPanel({
         question: initialQuestion,
         answer: "",
         citations: [],
-        status: "retrieving",
+        status: isLiveSession ? "done" : "retrieving",
         error: null,
         sectionContext: sectionScope,
         confidenceScore: null,
         confidenceTier: null,
         isQueued: false,
         isVerified: false,
+        isLiveReviewing: isLiveSession,
       };
       setMessages((prev) => [...prev, newMessage]);
       const queryText = sectionScope
@@ -131,7 +168,7 @@ export function QAPanel({
   useEffect(() => {
     if (messages.length === 0) return;
     const lastMsg = messages[messages.length - 1];
-    if (lastMsg.status === "done" || lastMsg.status === "error" || lastMsg.isVerified) return;
+    if (lastMsg.status === "done" || lastMsg.status === "error" || lastMsg.isVerified || lastMsg.isLiveReviewing) return;
 
     setMessages((prev) => {
       const updated = [...prev];
@@ -162,13 +199,14 @@ export function QAPanel({
         question: trimmed,
         answer: "",
         citations: [],
-        status: "retrieving",
+        status: isLiveSession ? "done" : "retrieving",
         error: null,
         sectionContext: sectionScope,
         confidenceScore: null,
         confidenceTier: null,
         isQueued: false,
         isVerified: false,
+        isLiveReviewing: isLiveSession,
       };
       setMessages((prev) => [...prev, newMessage]);
       setInputValue("");
@@ -179,7 +217,7 @@ export function QAPanel({
         : trimmed;
       askQuestion(queryText);
     },
-    [inputValue, sectionScope, askQuestion]
+    [inputValue, sectionScope, askQuestion, isLiveSession]
   );
 
   const handleKeyDown = useCallback(
