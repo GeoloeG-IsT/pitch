@@ -1,4 +1,4 @@
-"""WebSocket notification channel for investor push updates."""
+"""WebSocket notification channel for investor and founder push updates."""
 
 from __future__ import annotations
 
@@ -12,6 +12,49 @@ router = APIRouter(tags=["notifications"])
 
 # In-memory registry of connected investor WebSockets
 _investor_connections: dict[str, WebSocket] = {}
+
+# In-memory registry of connected founder WebSockets (list for multiple tabs)
+_founder_connections: dict[str, list[WebSocket]] = {}
+
+
+async def register_founder(founder_id: str, ws: WebSocket) -> None:
+    """Register a founder WebSocket connection."""
+    if founder_id not in _founder_connections:
+        _founder_connections[founder_id] = []
+    _founder_connections[founder_id].append(ws)
+
+
+async def unregister_founder(founder_id: str, ws: WebSocket) -> None:
+    """Unregister a founder WebSocket connection."""
+    if founder_id in _founder_connections:
+        try:
+            _founder_connections[founder_id].remove(ws)
+        except ValueError:
+            pass
+        if not _founder_connections[founder_id]:
+            del _founder_connections[founder_id]
+
+
+async def notify_founder(founder_id: str, message: dict) -> None:
+    """Send a message to all connected founder WebSockets."""
+    if founder_id not in _founder_connections:
+        return
+
+    dead: list[WebSocket] = []
+    for ws in _founder_connections[founder_id]:
+        try:
+            await ws.send_json(message)
+        except Exception:
+            dead.append(ws)
+
+    for ws in dead:
+        try:
+            _founder_connections[founder_id].remove(ws)
+        except ValueError:
+            pass
+
+    if founder_id in _founder_connections and not _founder_connections[founder_id]:
+        del _founder_connections[founder_id]
 
 
 @router.websocket("/notifications/stream")
