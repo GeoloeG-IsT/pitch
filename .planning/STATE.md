@@ -145,6 +145,10 @@ Recent decisions affecting current work:
 - [Phase 08]: Server-side /api/me route added to work around WSL2 Supabase direct-call hanging
 - [Phase 08]: Cookie-based getAuthHeaders for presenter WebSocket on WSL2
 
+### Roadmap Evolution
+
+- Phase 9 added: Polish: citation clicks and shared-types cleanup
+
 ### Pending Todos
 
 None yet.

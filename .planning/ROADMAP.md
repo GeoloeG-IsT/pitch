@@ -165,3 +165,13 @@ Note: Phase 6 (Auth) depends on Phase 1 only and can execute in parallel with Ph
 | 6. Auth + Access Control | 4/4 | Complete   | 2026-03-19 |
 | 7. Analytics | 0/2 | Not started | - |
 | 8. Live Pitch Mode | 2/2 | Complete   | 2026-03-20 |
+
+### Phase 9: Polish: citation clicks and shared-types cleanup
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 9 to break down)
