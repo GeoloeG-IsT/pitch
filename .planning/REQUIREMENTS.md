@@ -55,8 +55,8 @@ Requirements for the PoC demo. Each maps to roadmap phases.
 
 ### Live Pitch Mode
 
-- [ ] **LIVE-01**: Founder can present the pitch while investors ask questions via the Q&A interface in real-time
-- [ ] **LIVE-02**: Founder sees a presenter view with incoming questions and AI draft answers
+- [x] **LIVE-01**: Founder can present the pitch while investors ask questions via the Q&A interface in real-time
+- [x] **LIVE-02**: Founder sees a presenter view with incoming questions and AI draft answers
 
 ### Demo Content
 
@@ -143,8 +143,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ANLYT-03 | Phase 7 | Complete |
 | ANLYT-04 | Phase 7 | Complete |
 | ANLYT-05 | Phase 7 | Complete |
-| LIVE-01 | Phase 8 | Pending |
-| LIVE-02 | Phase 8 | Pending |
+| LIVE-01 | Phase 8 | Complete |
+| LIVE-02 | Phase 8 | Complete |
 | DEMO-01 | Phase 1 | Complete |
 | DEMO-02 | Phase 1 | Complete |
 | DEMO-03 | Phase 1 | Complete |

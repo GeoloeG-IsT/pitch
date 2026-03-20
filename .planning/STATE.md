@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 8 UI-SPEC approved
-last_updated: "2026-03-20T07:51:57.626Z"
-last_activity: 2026-03-20 -- Completed 07-02 (Tracking & Dashboard)
+status: executing
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-20T08:20:18.365Z"
+last_activity: 2026-03-20 -- Completed 08-01 (Live Sessions Backend)
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 19
-  completed_plans: 19
-  percent: 100
+  total_plans: 21
+  completed_plans: 20
+  percent: 95
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Investors can ask natural language questions about any aspect of a startup's pitch and get accurate, source-cited answers instantly, without the founder needing to be in the room.
-**Current focus:** Phase 7 Analytics complete. All 19 plans across 7 phases done. Phase 8 remaining.
+**Current focus:** Phase 8 Live Pitch Mode in progress. 08-01 backend complete, 08-02 frontend remaining.
 
 ## Current Position
 
-Phase: 7 of 8 (Analytics)
-Plan: 2 of 2 in current phase (07-02 complete)
-Status: Phase 7 Complete
-Last activity: 2026-03-20 -- Completed 07-02 (Tracking & Dashboard)
+Phase: 8 of 8 (Live Pitch Mode)
+Plan: 1 of 2 in current phase (08-01 complete)
+Status: Phase 8 In Progress
+Last activity: 2026-03-20 -- Completed 08-01 (Live Sessions Backend)
 
-Progress: [██████████] 100%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [██████████] 100%
 | Phase 06 P04 | 5min | 3 tasks | 7 files |
 | Phase 07 P01 | 7min | 2 tasks | 6 files |
 | Phase 07 P02 | 4min | 2 tasks | 12 files |
+| Phase 08 P01 | 6min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -134,6 +135,9 @@ Recent decisions affecting current work:
 - 07-01: First-view detection queries page_open count after insert (count<=1 = first view)
 - [Phase 07]: useAnalyticsCountBadge exported as hook for parent-controlled count reset on tab switch
 - [Phase 07]: Heatmap section data aggregated client-side by fetching all investor details in parallel
+- [Phase 08]: In-memory _active_sessions cache with DB startup hydration for fast session lookups
+- [Phase 08]: PoC single-tenant: iterate all _active_sessions (at most 1) for live query routing
+- [Phase 08]: Override action maps to review_status=edited; dismiss broadcasts question_dismissed event
 
 ### Pending Todos
 
@@ -147,6 +151,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T07:51:57.620Z
-Stopped at: Phase 8 UI-SPEC approved
-Resume file: .planning/phases/08-live-pitch-mode/08-UI-SPEC.md
+Last session: 2026-03-20T08:20:18.360Z
+Stopped at: Completed 08-01-PLAN.md
+Resume file: None
